@@ -195,7 +195,7 @@ apiRoutes.post('/updateHorse', function(req, res) {
         } else {
             horse[req.body.prop] = req.body.value;
             horse.save(function(err, product, numAffected){
-                res.json({success: true, horse: product});
+                res.json({success: true, horse: horse});
             });
 
 

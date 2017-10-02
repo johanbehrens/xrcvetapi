@@ -12,7 +12,7 @@ var HorseSchema = new Schema({
     },
     distance: {
         type: String,
-        required: true
+        required: false
     },
     HYDR: {
         type: String,
