@@ -4,15 +4,6 @@ printer.init({
     interface: '/dev/usb/lp0'
 });
 
-printer.code128("Code128", {
-    width: "LARGE",          // "SMALL", "MEDIUM", "LARGE",
-    height: 80,              // 50 < x < 80
-    text: 2,                 // 1 - No text
-                             // 2 - Text on bottom
-                             // 3 - No text inline
-                             // 4 - Text on bottom inline
-});
-
 printer.printQR("QR Code", {
     cellSize: 3,             // 1 - 8
     correction: 'M',         // L(7%), M(15%), Q(25%), H(30%)
