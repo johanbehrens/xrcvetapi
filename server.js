@@ -50,21 +50,33 @@ var apiRoutes = express.Router();
 // create a new user account (POST http://localhost:8080/api/signup)
 apiRoutes.post('/signup', function(req, res) {
     if (!req.body.name || !req.body.password) {
-        res.json({success: false, msg: 'Please pass name and password.'});
+        return res.json({success: false, msg: 'Please pass name and password.'});
     } else {
-        var newUser = new User({
-            name: req.body.name,
-            password: req.body.password
-        });
-        // save the user
-        newUser.save(function(err) {
-            if (err) {
+        createUser(req.body.name, req.body.password, created);
+
+        function created(err) {
+            if (err){
                 return res.json({success: false, msg: 'Username already exists.'});
             }
-            res.json({success: true, msg: 'Successful created new user.'});
-        });
+
+            return res.json({success: true, msg: 'Successful created new user.'});
+        }
     }
 });
+
+function createUser(user, pass, callback) {
+    var newUser = new User({
+        name: user,
+        password: pass
+    });
+    // save the user
+    newUser.save(function(err) {
+        if (err) {
+            return callback(err);
+        }
+        return callback();
+    });
+}
 
 // connect the api routes under /api/*
 app.use('/api', apiRoutes);
@@ -76,14 +88,28 @@ apiRoutes.post('/authenticate', function(req, res) {
         if (err) throw err;
 
         if (!user) {
-            res.send({success: false, msg: 'Authentication failed. User not found.'});
+            User.count({}, function(err, c) {
+                if (c === 0) {
+                    createUser('admin', 'admin', created);
+
+                    function created(err) {
+                        if (err){
+                            res.json({success: false, msg: err});
+                        }
+else {
+                            var token = jwt.encode(user, config.secret);
+                            res.json({success: true, token: 'JWT ' + token});
+                        }
+                    }
+                }
+                else {
+                    res.send({success: false, msg: 'Authentication failed. Wrong password.'});
+                }
+            });
         } else {
-            // check if password matches
             user.comparePassword(req.body.password, function (err, isMatch) {
                 if (isMatch && !err) {
-                    // if user is found and password is right create a token
                     var token = jwt.encode(user, config.secret);
-                    // return the information including token as JSON
                     res.json({success: true, token: 'JWT ' + token});
                 } else {
                     res.send({success: false, msg: 'Authentication failed. Wrong password.'});
