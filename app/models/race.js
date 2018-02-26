@@ -7,6 +7,11 @@ var RaceSchema = new Schema({
         unique: true,
         required: true
     },
+    isActive: {
+        type: Boolean,
+        unique: false,
+        required: true
+    },
     horses : [{ type: Schema.ObjectId, ref: 'Horse' }]
 });
 

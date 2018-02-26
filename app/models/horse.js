@@ -14,6 +14,14 @@ var HorseSchema = new Schema({
         type: String,
         required: false
     },
+    DISQ: {
+        type: Boolean,
+        required: false
+    },
+    REASON: {
+        type: String,
+        required: false
+    },
     HYDR: {
         type: String,
         required: false

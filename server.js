@@ -10,6 +10,8 @@ var Race       = require('./app/models/race'); // get the mongoose model
 var Horse       = require('./app/models/horse'); // get the mongoose model
 var port        = process.env.PORT || 8080;
 var jwt         = require('jwt-simple');
+var socketServer        = require('./socketServer');
+require('epson-thermal-printer')
 var Parser = require('node-dbf');
 
 // get our request parameters
@@ -127,7 +129,8 @@ apiRoutes.post('/addrace', function(req, res) {
 
         if (!race) {
             var newRace = new Race({
-                name: req.body.name
+                name: req.body.name,
+                isActive: false
             });
 
             newRace.save(function(err) {
@@ -138,6 +141,37 @@ apiRoutes.post('/addrace', function(req, res) {
             });
         } else {
             res.send({success: false, msg: 'Race already exists.'});
+        }
+    });
+});
+
+apiRoutes.post('/setRaceActive', function(req, res) {
+    Race.findOne({
+        _id: req.body.raceid
+    }, function(err, race) {
+        if (err) throw err;
+
+        if (!race) {
+            return res.send({success: false, msg: 'Race not found.'});
+        } else {
+            Race.findOne({
+                _id: req.body.raceid
+            }, function(err, activeRace) {
+                activeRace.isActive = false;
+                activeRace.save(function(err){
+                    if(err) {
+                        return res.json({success: false, race: race});
+                    }
+
+                    race.isActive = true;
+                    race.save(function(err){
+                        if(err) {
+                            return res.json({success: false, race: race});
+                        }
+                        res.json({success: true, race: race});
+                    });
+                });
+            });
         }
     });
 });
@@ -220,6 +254,63 @@ apiRoutes.post('/updateHorse', function(req, res) {
             return res.status(403).send({success: false, msg: 'Horse not found.'});
         } else {
             horse[req.body.prop] = req.body.value;
+            horse.save(function(err, product, numAffected){
+                res.json({success: true, horse: horse});
+            });
+
+
+        }
+    });
+});
+
+apiRoutes.get('/vetCard/:horseid/leg/:leg', function(req, res) {
+    Horse.findOne({
+        _id: req.params.horseid
+    }, function(err, horse) {
+        if (!horse) {
+            return res.status(403).send({success: false, msg: 'Horse not found.'});
+        } else {
+
+            res.json({success: true, vetCard: {
+                HYDR: horse['HYDR'+req.params.leg],
+                LOCO: horse['LOCO'+req.params.leg],
+                HABI: horse['HABI'+req.params.leg],
+                MEMB: horse['MEMB'+req.params.leg],
+                CAP: horse['CAP'+req.params.leg],
+                GUT: horse['GUT'+req.params.leg],
+                COMMENT: horse['COMMENT'+req.params.leg],
+                GWB: horse['GWB'+req.params.leg],
+                DISQLEG: horse['DISQLEG'],
+                DISQ: horse['DISQ'],
+                REASON: horse['REASON']
+        }});
+        }
+    });
+});
+
+apiRoutes.post('/updateVetCard', function(req, res) {
+    Horse.findOne({
+        _id: req.body.horseid
+    }, function(err, horse) {
+        if (!horse) {
+            return res.status(403).send({success: false, msg: 'Horse not found.'});
+        } else {
+
+            horse['HYDR'+req.body.leg] = req.body.vetCard.HYDR;
+            horse['LOCO'+req.body.leg] = req.body.vetCard.LOCO;
+            horse['HABI'+req.body.leg] = req.body.vetCard.HABI;
+            horse['MEMB'+req.body.leg] = req.body.vetCard.MEMB;
+            horse['CAP'+req.body.leg] = req.body.vetCard.CAP;
+            horse['GUT'+req.body.leg] = req.body.vetCard.GUT;
+            horse['COMMENT'+req.body.leg] = req.body.vetCard.COMMENT;
+            horse['GWB'+req.body.leg] = req.body.vetCard.GWB;
+
+            if(req.body.vetCard.DISQ) {
+                horse['DISQLEG'] = req.body.vetCard.leg;
+                horse['DISQ'] = req.body.vetCard.DISQ;
+                horse['REASON'] = req.body.vetCard.REASON;
+            }
+
             horse.save(function(err, product, numAffected){
                 res.json({success: true, horse: horse});
             });
@@ -323,6 +414,57 @@ apiRoutes.post('/importHorses', function(req, res) {
             res.send({success: false, msg: 'Race already exists.'});
         }
     });
+});
+
+apiRoutes.post('/heartBeat/register', function(req, res) {
+    socketServer.registerHeartbeatDevice(req.body.identifier, done);
+    function done(err) {
+        if (err) {
+            return res.send({success: false, msg: err});
+        }
+        return res.send({success: true });
+    }
+
+});
+
+apiRoutes.post('/heartBeat/setIp', function(req, res) {
+    socketServer.setIPAddress(req.body.identifier, req.body.ip, req.body.port, done);
+    function done(err) {
+        if (err) {
+            return res.send({success: false, msg: err});
+        }
+        return res.send({success: true });
+    }
+});
+
+apiRoutes.post('/heartBeat/setValue', function(req, res) {
+    socketServer.setValue(req.body.identifier, Buffer.from(req.body.value, 'hex'), done);
+    function done(err) {
+        if (err) {
+            return res.send({success: false, msg: err.message});
+        }
+        return res.send({success: true });
+    }
+});
+
+apiRoutes.post('/heartBeat/ping', function(req, res) {
+    socketServer.ping(req.body.identifier, done);
+    function done(err) {
+        if (err) {
+            return res.send({success: false, msg: err});
+        }
+        return res.send({success: true });
+    }
+});
+
+apiRoutes.get('/heartBeat/getAllClients', function(req, res) {
+    socketServer.getAllClients(done);
+    function done(err, clients) {
+        if (err) {
+            return res.send({success: false, msg: err});
+        }
+        return res.send({success: true, clients: clients });
+    }
 });
 
 getToken = function (headers) {
