@@ -1,4 +1,4 @@
 module.exports = {
     'secret': 'devdacticIsAwesome',
-    'database': 'mongodb://localhost/xrcvet'
+    'database': 'mongo'//process.env.MONGO_URI || 'localhost'
 };

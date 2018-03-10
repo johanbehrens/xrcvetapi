@@ -11,13 +11,15 @@ client.registerMethod("setValue", "http://localhost:8080/api/heartBeat/setValue"
 var arr = {};
 var clients = [];
 
-Test();
+//Test();
 //refreshClients(foundClients);
 
 function refreshClients(callback) {
     client.methods.getAllClients(function (data, response) {
         if(data.success === true){
-            clients = data.clients;
+            arr = data.clients.map(function(c) {
+                return c.identifier;
+            });
             return callback(true);
         }
         return callback(false);
@@ -71,27 +73,31 @@ port.on('data', function (data) {
         console.log('Pulse: ' + d + ' - ' + p);
         if(!arr[id]) {
             arr[id] = [];
+            register(id, pushHeartRate);
         }
+        else return pushHeartRate();
 
-        arr[id].push(p);
+        function pushHeartRate() {
+            arr[id].push(p);
 
-        if (arr[id].length > 14) {
-            var sum = arr[id].reduce(function (a, b) {
-                return a + b;
-            });
-            var avg = sum / arr[id].length;
-            const hexString = avg.toString(16);
-            const buff1 = Buffer.from(hexString, 'hex');
-            console.log('Sending: ' + avg);
-            setValue(id, buff1, valueSent);
-            function valueSent(data) {
-                if(data.success === true) arr[id] = [];
+            if (arr[id].length > 14) {
+                var sum = arr[id].reduce(function (a, b) {
+                    return a + b;
+                });
+                var avg = sum / arr[id].length;
+                const hexString = avg.toString(16);
+                const buff1 = Buffer.from(hexString, 'hex');
+                console.log('Sending: ' + avg);
+                setValue(id, buff1, valueSent);
+                function valueSent(data) {
+                    if(data.success === true) arr[id] = [];
+                }
             }
-        }
-        else{
-            const hexString = arr[id].length.toString(16);
-            const buff1 = Buffer.from(hexString, 'hex');
-            console.log('Reading: ' + arr[id].length);
+            else{
+                const hexString = arr[id].length.toString(16);
+                const buff1 = Buffer.from(hexString, 'hex');
+                console.log('Reading: ' + arr[id].length);
+            }
         }
     }
 });
