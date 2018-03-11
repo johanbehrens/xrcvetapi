@@ -64,6 +64,7 @@ function setValue(id, value, callback) {
 }
 
 port.on('data', function (data) {
+    console.log(data);
     const buff = Buffer.from(data);
     const id = buff.slice(1,3).toString('hex');
     const p = parseInt(buff.slice(4,5).toString('hex'), 16);
@@ -73,11 +74,13 @@ port.on('data', function (data) {
         console.log('Pulse: ' + d + ' - ' + p);
         if(!arr[id]) {
             arr[id] = [];
+            console.log('register:'+id);
             register(id, pushHeartRate);
         }
         else return pushHeartRate();
 
         function pushHeartRate() {
+            console.log('pushing:'+id);
             arr[id].push(p);
 
             if (arr[id].length > 14) {
