@@ -131,9 +131,8 @@ function setValue(identifier, valueBuffer, callback) {
         if (err) {
             return callback(err);
         }
-        return sendCommand(commands.setValue, valueBuffer, callback);
+        return sendCommand(identifier, commands.setValue, valueBuffer, callback);
     }
-
 }
 
 function ping(identifier, callback) {
@@ -143,12 +142,17 @@ function ping(identifier, callback) {
             console.log(err);
             return callback();
         }
-        return sendCommand(commands.ping, Buffer.from('00', 'hex'), callback);
+
+        return sendCommand(identifier, commands.ping, Buffer.from('00', 'hex'), callback);
     }
 }
 
-function sendCommand(command, valueBuff, callback) {
+function sendCommand(identifier, command, valueBuff, callback) {
     try {
+        var displayClient = clients.find(function (client) {
+            return client.identifier === identifier;
+        });
+
         const size = valueBuff.length;
         var buf = Buffer.alloc(256);
         buf[0] = 0x5a;
@@ -157,7 +161,8 @@ function sendCommand(command, valueBuff, callback) {
         valueBuff.copy(buf, 3);
         var crcbuf = Buffer.from(crc16(buf.slice(0, 3 + size)), "hex");
         crcbuf.copy(buf, 3 + size);
-        client.write(buf.slice(0, 3 + size + 2));
+        if(displayClient === undefined) return callback('Client is undefined');
+        displayClient.client.write(buf.slice(0, 3 + size + 2));
     }
     catch(err){
         return callback(err);

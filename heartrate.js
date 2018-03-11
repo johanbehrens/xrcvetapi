@@ -59,7 +59,7 @@ function setValue(id, value, callback) {
     };
     client.methods.setValue(args, function (data, response) {
         console.log(data);
-        return callback();
+        return callback(data);
     });
 }
 
