@@ -441,6 +441,7 @@ apiRoutes.post('/heartBeat/setValue', function(req, res) {
     socketServer.setValue(req.body.identifier, Buffer.from(req.body.value, 'hex'), done);
     function done(err) {
         if (err) {
+            console.log(err);
             return res.send({success: false, msg: err.message});
         }
         return res.send({success: true });

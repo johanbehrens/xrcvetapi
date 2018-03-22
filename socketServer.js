@@ -139,7 +139,7 @@ function ping(identifier, callback) {
     function connected(err) {
         if (err) {
             console.log(err);
-            return callback();
+            return callback(err);
         }
 
         return sendCommand(identifier, commands.ping, Buffer.from('00', 'hex'), callback);
@@ -148,6 +148,7 @@ function ping(identifier, callback) {
 
 function sendCommand(identifier, command, valueBuff, callback) {
     try {
+        console.log('sendCommand'+identifier+ ' ' + command + ' ' + valueBuff);
         var displayClient = clients.find(function (client) {
             return client.identifier === identifier;
         });
@@ -160,11 +161,18 @@ function sendCommand(identifier, command, valueBuff, callback) {
         valueBuff.copy(buf, 3);
         var crcbuf = Buffer.from(crc16(buf.slice(0, 3 + size)), "hex");
         crcbuf.copy(buf, 3 + size);
-        if(displayClient === undefined) return callback('Client is undefined');
+        if(displayClient === undefined){
+            console.log('Client is undefined');
+            return callback('Client is undefined');
+        }
+        console.log('Before write');
         displayClient.client.write(buf.slice(0, 3 + size + 2));
+        console.log('After write');
     }
     catch(err){
+        console.log('Error:' + err);
         return callback(err);
     }
+    console.log('callback');
     return callback();
 }
