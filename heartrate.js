@@ -1,6 +1,6 @@
 var net = require('net');
 var SerialPort = require('serialport');
-var port = new SerialPort('/dev/ttyUSB1',{baudRate: 115200});
+var port = new SerialPort('/dev/ttyUSB0',{baudRate: 115200});
 var Client = require('node-rest-client').Client;
 var client = new Client();
 
