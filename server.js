@@ -41,7 +41,7 @@ app.listen(port);
 console.log('There will be dragons: http://localhost:' + port);
 
 // connect to database
-mongoose.connect('mongodb://mongo:27017/xrcvet');
+mongoose.connect('mongodb://localhost:27017/xrcvet');
 
 // pass passport for configuration
 require('./config/passport')(passport);
