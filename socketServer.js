@@ -73,6 +73,7 @@ function socketClient(identifier, callback) {
                 displayClient.ip = device.ip;
                 displayClient.port = device.port;
                 displayClient.isActive = false;
+                displayClient.identifier = identifier;
 
                 clients.push(displayClient);
                 return connectDisplay(displayClient, callback);
