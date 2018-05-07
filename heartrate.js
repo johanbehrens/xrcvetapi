@@ -16,10 +16,11 @@ var myVar = setInterval(checkValues, 1000);
 
 function checkValues() {
     for (var id in arr) {
-        if (arrTimes[id].running === true) {
-            var start = arrTimes[id].start.getTime();
-            var end = new Date();
-            var diff = (end - start) / 1000;
+        var start = arrTimes[id].start.getTime();
+        var end = new Date();
+        var diff = (end - start) / 1000;
+
+        if (arrTimes[id].running === true && arr[id].length > 2) {
             if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
                 console.log('First: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].first = true;
@@ -57,6 +58,9 @@ function checkValues() {
                     if(data.success === true) console.log('success: ' + avg);
                 }
             }
+        }
+        else if(diff >= 90) {
+            arrTimes[id].running = true;
         }
     }
 }
