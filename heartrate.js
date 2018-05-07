@@ -61,6 +61,7 @@ function checkValues() {
         }
         else if(diff >= 90) {
             arrTimes[id].running = true;
+            arrTimes[id].start = new Date();
         }
     }
 }
