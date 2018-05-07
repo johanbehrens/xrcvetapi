@@ -9,7 +9,54 @@ client.registerMethod("register", "http://localhost:8080/api/heartBeat/register"
 client.registerMethod("setValue", "http://localhost:8080/api/heartBeat/setValue", "POST");
 
 var arr = {};
+var arrTimes = {};
 var clients = [];
+
+var myVar = setInterval(checkValues, 1000);
+
+function checkValues() {
+    arr.forEach(myFunction);
+
+    function myFunction(id, index) {
+        if (arrTimes[id].running === true) {
+            var start = arrTimes[id].start.getTime();
+            var end = new Date();
+            var diff = (end - start) / 1000;
+            if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
+                send();
+            }
+            else if(diff >= 30 && diff < 60 && arrTimes[id].first === true && arrTimes[id].second === false) {
+                send();
+            }
+            else if(diff >= 60 &&  arrTimes[id].first === true && arrTimes[id].second === true) {
+                send(true);
+            }
+
+            function send(done) {
+                var sum = arr[id].reduce(function (a, b) {
+                    return a + b;
+                });
+                var avg = sum / arr[id].length;
+                const hexString = avg.toString(16);
+                const buff1 = Buffer.from(hexString, 'hex');
+                console.log('Sending: ' + avg);
+                setValue(id, buff1, valueSent);
+                function valueSent(data) {
+                    if(done === true){
+                        arrTimes[id] = {
+                            running: false,
+                            start: new Date(),
+                            first: false,
+                            second: false
+                        };
+                        arr[id] = [];
+                    }
+                    if(data.success === true) console.log('success: ' + avg);
+                }
+            }
+        }
+    }
+}
 
 //Test();
 //refreshClients(foundClients);
@@ -74,6 +121,12 @@ port.on('data', function (data) {
         console.log('Pulse: ' + d + ' - ' + p);
         if(!arr[id]) {
             arr[id] = [];
+            arrTimes[id] = {
+                running: true,
+                start: new Date(),
+                first: false,
+                second: false
+            };
             console.log('register:'+id);
             register(id, pushHeartRate);
         }
@@ -83,24 +136,9 @@ port.on('data', function (data) {
             console.log('pushing:'+id);
             arr[id].push(p);
 
-            if (arr[id].length > 14) {
-                var sum = arr[id].reduce(function (a, b) {
-                    return a + b;
-                });
-                var avg = sum / arr[id].length;
-                const hexString = avg.toString(16);
-                const buff1 = Buffer.from(hexString, 'hex');
-                console.log('Sending: ' + avg);
-                setValue(id, buff1, valueSent);
-                function valueSent(data) {
-                    if(data.success === true) arr[id] = [];
-                }
-            }
-            else{
-                const hexString = arr[id].length.toString(16);
-                const buff1 = Buffer.from(hexString, 'hex');
-                console.log('Reading: ' + arr[id].length);
-            }
+            const hexString = arr[id].length.toString(16);
+            const buff1 = Buffer.from(hexString, 'hex');
+            console.log('Reading: ' + arr[id].length);
         }
     }
 });
