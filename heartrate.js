@@ -21,14 +21,17 @@ function checkValues() {
             var end = new Date();
             var diff = (end - start) / 1000;
             if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
+                console.log('First: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].first = true;
                 send();
             }
             else if(diff >= 30 && diff < 60 && arrTimes[id].first === true && arrTimes[id].second === false) {
+                console.log('Second: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].second = true;
                 send();
             }
             else if(diff >= 60 &&  arrTimes[id].first === true && arrTimes[id].second === true) {
+                console.log('Last: ' + diff + ' count' + arr[id].length);
                 send(true);
             }
 
@@ -39,7 +42,7 @@ function checkValues() {
                 var avg = sum / arr[id].length;
                 const hexString = avg.toString(16);
                 const buff1 = Buffer.from(hexString, 'hex');
-                console.log('Sending: ' + avg);
+                //console.log('Sending: ' + avg);
                 setValue(id, buff1, valueSent);
                 function valueSent(data) {
                     if(done === true){
@@ -133,12 +136,12 @@ port.on('data', function (data) {
         else return pushHeartRate();
 
         function pushHeartRate() {
-            console.log('pushing:'+id);
+            //console.log('pushing:'+id);
             arr[id].push(p);
 
-            const hexString = arr[id].length.toString(16);
-            const buff1 = Buffer.from(hexString, 'hex');
-            console.log('Reading: ' + arr[id].length);
+            //const hexString = arr[id].length.toString(16);
+            //const buff1 = Buffer.from(hexString, 'hex');
+            //console.log('Reading: ' + arr[id].length);
         }
     }
 });
