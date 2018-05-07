@@ -47,12 +47,9 @@ function checkValues() {
                 setValue(id, buff1, valueSent);
                 function valueSent(data) {
                     if(done === true){
-                        arrTimes[id] = {
-                            running: false,
-                            start: new Date(),
-                            first: false,
-                            second: false
-                        };
+                        arrTimes[id].running = false;
+                        arrTimes[id].first = false;
+                        arrTimes[id].second = false;
                         arr[id] = [];
                     }
                     if(data.success === true) console.log('success: ' + avg);
@@ -62,6 +59,12 @@ function checkValues() {
         else if(diff >= 90) {
             arrTimes[id].running = true;
             arrTimes[id].start = new Date();
+            const buff1 = Buffer.from('10', 'hex');
+            setValue(id, buff1, reset);
+
+            function reset(data) {
+                console.log('reset');
+            }
         }
     }
 }
