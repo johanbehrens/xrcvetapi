@@ -15,9 +15,7 @@ var clients = [];
 var myVar = setInterval(checkValues, 1000);
 
 function checkValues() {
-    arr.forEach(myFunction);
-
-    function myFunction(id, index) {
+    for (var id in arr) {
         if (arrTimes[id].running === true) {
             var start = arrTimes[id].start.getTime();
             var end = new Date();
