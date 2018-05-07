@@ -21,9 +21,11 @@ function checkValues() {
             var end = new Date();
             var diff = (end - start) / 1000;
             if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
+                arrTimes[id].first = true;
                 send();
             }
             else if(diff >= 30 && diff < 60 && arrTimes[id].first === true && arrTimes[id].second === false) {
+                arrTimes[id].second = true;
                 send();
             }
             else if(diff >= 60 &&  arrTimes[id].first === true && arrTimes[id].second === true) {
