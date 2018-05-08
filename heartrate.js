@@ -60,7 +60,7 @@ function checkValues() {
         else if(diff >= 90) {
             //arrTimes[id].running = true;
             arrTimes[id].start = new Date();
-            const buff1 = Buffer.from('a', 'hex');
+            const buff1 = Buffer.from('3e7', 'hex');
             setValue(id, buff1, reset);
 
             function reset(data) {
