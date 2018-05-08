@@ -58,9 +58,9 @@ function checkValues() {
             }
         }
         else if(diff >= 90) {
-            arrTimes[id].running = true;
+            //arrTimes[id].running = true;
             arrTimes[id].start = new Date();
-            const buff1 = Buffer.from('10', 'hex');
+            const buff1 = Buffer.from('a', 'hex');
             setValue(id, buff1, reset);
 
             function reset(data) {
@@ -145,6 +145,12 @@ port.on('data', function (data) {
         else return pushHeartRate();
 
         function pushHeartRate() {
+
+            if(arr[id].length === 0) {
+                arrTimes[id].running = true;
+                arrTimes[id].start = new Date();
+            }
+
             //console.log('pushing:'+id);
             arr[id].push(p);
 

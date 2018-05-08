@@ -104,6 +104,7 @@ function connectDisplay(displayClient, callback) {
     if(!displayClient.isActive)  {
         displayClient.client = new net.Socket();
         displayClient.client.connect(displayClient.port, displayClient.ip, function() {
+            displayClient.isActive = true;
             console.log('CONNECTED TO: ' + displayClient.ip + ':' + displayClient.port);
         });
 
