@@ -145,18 +145,18 @@ port.on('data', function (data) {
         else return pushHeartRate();
 
         function pushHeartRate() {
-
-            if(arr[id].length === 0) {
-                arrTimes[id].running = true;
-                arrTimes[id].start = new Date();
-            }
-
-            //console.log('pushing:'+id);
             arr[id].push(p);
 
-            //const hexString = arr[id].length.toString(16);
-            //const buff1 = Buffer.from(hexString, 'hex');
-            //console.log('Reading: ' + arr[id].length);
+            if(arr[id].length === 1) {
+                const buff1 = Buffer.from('1e', 'hex');
+                setValue(id, buff1, reset);
+
+                function reset(data) {
+                    console.log('started');
+                    arrTimes[id].running = true;
+                    arrTimes[id].start = new Date();
+                }
+            }
         }
     }
 });
