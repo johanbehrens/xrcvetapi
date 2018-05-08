@@ -22,6 +22,7 @@ function checkValues() {
         console.log('Diff: ' + diff);
 
         const hexString = diff.toString(16);
+        const buff1 = Buffer.from(hexString, 'hex');
         setValue(id, buff1, reset1);
 
         function reset1(data) {
