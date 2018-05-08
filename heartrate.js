@@ -21,15 +21,6 @@ function checkValues() {
         var diff = (end - start) / 1000;
         console.log('Diff: ' + diff);
 
-        const hexString = diff.toString(16);
-        const buff1 = Buffer.from(hexString, 'hex');
-        setValue(id, buff1, reset1);
-
-        function reset1(data) {
-
-        }
-
-
         if (arrTimes[id].running === true && arr[id].length > 2) {
             if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
                 console.log('First: ' + diff + ' count' + arr[id].length);
@@ -68,8 +59,8 @@ function checkValues() {
         }
         else if(diff >= 90) {
             //arrTimes[id].running = true;
-            //arrTimes[id].start = new Date();
-            const buff1 = Buffer.from('3e7', 'hex');
+            arrTimes[id].start = new Date();
+            const buff1 = Buffer.from('14', 'hex');
             setValue(id, buff1, reset);
 
             function reset(data) {
