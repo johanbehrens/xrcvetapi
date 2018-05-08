@@ -19,6 +19,7 @@ function checkValues() {
         var start = arrTimes[id].start.getTime();
         var end = new Date();
         var diff = (end - start) / 1000;
+        console.log('Diff: ' + diff);
 
         if (arrTimes[id].running === true && arr[id].length > 2) {
             if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
@@ -122,14 +123,14 @@ function setValue(id, value, callback) {
 }
 
 port.on('data', function (data) {
-    console.log(data);
+    //console.log(data);
     const buff = Buffer.from(data);
     const id = buff.slice(1,3).toString('hex');
     const p = parseInt(buff.slice(4,5).toString('hex'), 16);
     const d = new Date();
 
     if(p > 0) {
-        console.log('Pulse: ' + d + ' - ' + p);
+        console.log('Pulse ' + id + ': ' + d + ' - ' + p);
         if(!arr[id]) {
             arr[id] = [];
             arrTimes[id] = {

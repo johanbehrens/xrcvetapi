@@ -166,14 +166,14 @@ function sendCommand(identifier, command, valueBuff, callback) {
             console.log('Client is undefined');
             return callback('Client is undefined');
         }
-        console.log('Before write');
+        //console.log('Before write');
         displayClient.client.write(buf.slice(0, 3 + size + 2));
-        console.log('After write');
+        //console.log('After write');
     }
     catch(err){
         console.log('Error:' + err);
         return callback(err);
     }
-    console.log('callback');
+    //console.log('callback');
     return callback();
 }
