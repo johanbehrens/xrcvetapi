@@ -36,7 +36,7 @@ function checkValues() {
                 console.log('Last: ' + diff + ' count' + arr[id].length);
                 send(true);
             }
-            else {
+            else if(diff >= 90){
                 arrTimes[id].running = false;
                 arrTimes[id].start = new Date();
             }
