@@ -31,12 +31,12 @@ function checkValues() {
             if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
                 console.log('First: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].first = true;
-                send(avg <= 64);
+                send(avg <= 85);
             }
             else if(diff >= 30 && diff < 60 && arrTimes[id].first === true && arrTimes[id].second === false) {
                 console.log('Second: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].second = true;
-                send(avg <= 64);
+                send(avg <= 85);
             }
             else if(diff >= 60 &&  arrTimes[id].first === true && arrTimes[id].second === true) {
                 console.log('Last: ' + diff + ' count' + arr[id].length);
