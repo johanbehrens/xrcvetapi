@@ -118,6 +118,12 @@ function connectDisplay(displayClient, callback) {
         });
 
         displayClient.client.on('close', function() {
+            console.log('Error on connection handled');
+            displayClient.client.destroy();
+            displayClient.isActive = false;
+        });
+
+        displayClient.client.on('error', function() {
             console.log('Connection closed');
             displayClient.isActive = false;
         });

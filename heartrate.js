@@ -19,7 +19,7 @@ function checkValues() {
         var start = arrTimes[id].start.getTime();
         var end = new Date();
         var diff = (end - start) / 1000;
-        console.log('Diff: ' + diff);
+        console.log('Diff: ' + diff + ' ' + arrTimes[id].running+ ' ' + arrTimes[id].first+ ' ' + arrTimes[id].second);
 
         if (arrTimes[id].running === true && arr[id].length > 2) {
             if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
