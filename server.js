@@ -433,7 +433,15 @@ apiRoutes.post('/heartBeat/setIp', function(req, res) {
         if (err) {
             return res.send({success: false, msg: err});
         }
-        return res.send({success: true });
+
+        socketServer.setValue(req.body.identifier, '10', done);
+        function done(err) {
+            if (err) {
+                console.log(err);
+                return res.send({success: false, msg: err.message});
+            }
+            return res.send({success: true });
+        }
     }
 });
 
