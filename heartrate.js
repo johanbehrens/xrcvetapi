@@ -53,6 +53,7 @@ function checkValues() {
 
             function send(done) {
 
+                if(done === false) return;
                 const hexString = avg.toString(16);
                 const buff1 = Buffer.from(hexString, 'hex');
                 //console.log('Sending: ' + avg);
