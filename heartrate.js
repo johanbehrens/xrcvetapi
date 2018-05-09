@@ -11,6 +11,7 @@ client.registerMethod("setValue", "http://localhost:8080/api/heartBeat/setValue"
 var arr = {};
 var arrTimes = {};
 var clients = [];
+var heartRateLimit = 64;
 
 var myVar = setInterval(checkValues, 1000);
 
@@ -32,13 +33,13 @@ function checkValues() {
                 console.log('First: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].first = true;
                 arrTimes[id].pauseTime = 45;
-                send(avg <= 85);
+                send(avg <= heartRateLimit);
             }
             else if(diff >= 30 && diff < 60 && arrTimes[id].first === true && arrTimes[id].second === false) {
                 console.log('Second: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].second = true;
                 arrTimes[id].pauseTime = 60;
-                send(avg <= 85);
+                send(avg <= heartRateLimit);
             }
             else if(diff >= 60 &&  arrTimes[id].first === true && arrTimes[id].second === true) {
                 console.log('Last: ' + diff + ' count' + arr[id].length);
