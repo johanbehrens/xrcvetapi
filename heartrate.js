@@ -20,7 +20,7 @@ function checkValues() {
         var end = new Date();
         var diff = (end - start) / 1000;
 
-        console.log('Diff: ' + diff + ' ' + arrTimes[id].running+ ' ' + arrTimes[id].first+ ' ' + arrTimes[id].second);
+        //console.log('Diff: ' + diff + ' ' + arrTimes[id].running+ ' ' + arrTimes[id].first+ ' ' + arrTimes[id].second);
 
         if (arrTimes[id].running === true && arr[id].length > 2) {
             var sum = arr[id].reduce(function (a, b) {
@@ -31,15 +31,18 @@ function checkValues() {
             if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
                 console.log('First: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].first = true;
+                arrTimes[id].pauseTime = 45;
                 send(avg <= 85);
             }
             else if(diff >= 30 && diff < 60 && arrTimes[id].first === true && arrTimes[id].second === false) {
                 console.log('Second: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].second = true;
+                arrTimes[id].pauseTime = 60;
                 send(avg <= 85);
             }
             else if(diff >= 60 &&  arrTimes[id].first === true && arrTimes[id].second === true) {
                 console.log('Last: ' + diff + ' count' + arr[id].length);
+                arrTimes[id].pauseTime = 90;
                 send(true);
             }
             else if(diff >= 90){
@@ -65,11 +68,12 @@ function checkValues() {
                 }
             }
         }
-        else if(diff >= 90) {
+        else if(diff >= arrTimes[id].pauseTime) {
             //arrTimes[id].running = true;
             arr[id] = [];
             arrTimes[id].start = new Date();
             arrTimes[id].pause = false;
+            arrTimes[id].pauseTime = 90;
             const buff1 = Buffer.from('14', 'hex');
             setValue(id, buff1, reset);
 
@@ -150,7 +154,8 @@ port.on('data', function (data) {
                 start: new Date(),
                 first: false,
                 second: false,
-                pause: false
+                pause: false,
+                pauseTime: 90
             };
             console.log('register:'+id);
             register(id, pushHeartRate);
