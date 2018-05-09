@@ -19,18 +19,24 @@ function checkValues() {
         var start = arrTimes[id].start.getTime();
         var end = new Date();
         var diff = (end - start) / 1000;
+
         console.log('Diff: ' + diff + ' ' + arrTimes[id].running+ ' ' + arrTimes[id].first+ ' ' + arrTimes[id].second);
 
         if (arrTimes[id].running === true && arr[id].length > 2) {
+            var sum = arr[id].reduce(function (a, b) {
+                return a + b;
+            });
+            var avg = sum / arr[id].length;
+
             if(diff >= 15 && diff < 30 && arrTimes[id].first === false) {
                 console.log('First: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].first = true;
-                send();
+                send(avg <= 64);
             }
             else if(diff >= 30 && diff < 60 && arrTimes[id].first === true && arrTimes[id].second === false) {
                 console.log('Second: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].second = true;
-                send();
+                send(avg <= 64);
             }
             else if(diff >= 60 &&  arrTimes[id].first === true && arrTimes[id].second === true) {
                 console.log('Last: ' + diff + ' count' + arr[id].length);
@@ -42,10 +48,7 @@ function checkValues() {
             }
 
             function send(done) {
-                var sum = arr[id].reduce(function (a, b) {
-                    return a + b;
-                });
-                var avg = sum / arr[id].length;
+
                 const hexString = avg.toString(16);
                 const buff1 = Buffer.from(hexString, 'hex');
                 //console.log('Sending: ' + avg);
@@ -133,7 +136,10 @@ port.on('data', function (data) {
     //console.log(data);
     const buff = Buffer.from(data);
     const id = buff.slice(1,3).toString('hex');
-    const p = parseInt(buff.slice(4,5).toString('hex'), 16);
+    const p1 = parseInt(buff.slice(4,4).toString('hex'), 16);
+    const p2 = parseInt(buff.slice(5,5).toString('hex'), 16);
+    const p = (p1 * 10) + p2;
+    console.log('heartBeat:' + p);
     const d = new Date();
 
     if(p > 0) {
