@@ -434,7 +434,7 @@ apiRoutes.post('/heartBeat/setIp', function(req, res) {
             return res.send({success: false, msg: err});
         }
 
-        socketServer.setValue(req.body.identifier, '10', done);
+        socketServer.setValue(req.body.identifier, Buffer.from('10', 'hex'), done);
         function done(err) {
             if (err) {
                 console.log(err);
