@@ -36,6 +36,10 @@ function checkValues() {
                 console.log('Last: ' + diff + ' count' + arr[id].length);
                 send(true);
             }
+            else {
+                arrTimes[id].running = false;
+                arrTimes[id].start = new Date();
+            }
 
             function send(done) {
                 var sum = arr[id].reduce(function (a, b) {
