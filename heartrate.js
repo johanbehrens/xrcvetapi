@@ -136,8 +136,7 @@ port.on('data', function (data) {
     //console.log(data);
     const buff = Buffer.from(data);
     const id = buff.slice(1,3).toString('hex');
-    console.log('heartBeat1:' + buff.slice(4,5).toString());
-    console.log('heartBeat2:' + buff.slice(4,6).toString());
+    console.log('heartBeat1:' + buff.toString());
 
     const p = parseInt(buff.slice(4,5).toString('hex'), 16);
     const d = new Date();
