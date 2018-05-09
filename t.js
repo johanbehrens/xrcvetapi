@@ -6,4 +6,5 @@
 
 var x = Buffer.from('abcdef');
 var y = x.slice(2,4);
-console.log(y.toString());
+ y = x.slice(2,4);
+console.log(x.toString());
