@@ -136,10 +136,10 @@ port.on('data', function (data) {
     //console.log(data);
     const buff = Buffer.from(data);
     const id = buff.slice(1,3).toString('hex');
-    const p1 = parseInt(buff.slice(4,4).toString('hex'), 16);
-    const p2 = parseInt(buff.slice(5,5).toString('hex'), 16);
-    const p = (p1 * 10) + p2;
-    console.log('heartBeat:' + p);
+    console.log('heartBeat1:' + buff.slice(4,5));
+    console.log('heartBeat2:' + buff.slice(4,6));
+
+    const p = parseInt(buff.slice(4,5).toString('hex'), 16);
     const d = new Date();
 
     if(p > 0) {
