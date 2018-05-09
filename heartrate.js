@@ -55,6 +55,7 @@ function checkValues() {
                         arrTimes[id].running = false;
                         arrTimes[id].first = false;
                         arrTimes[id].second = false;
+                        arrTimes[id].pause = true;
                         arr[id] = [];
                     }
                     if(data.success === true) console.log('success: ' + avg);
@@ -63,7 +64,9 @@ function checkValues() {
         }
         else if(diff >= 90) {
             //arrTimes[id].running = true;
+            arr[id] = [];
             arrTimes[id].start = new Date();
+            arrTimes[id].pause = false;
             const buff1 = Buffer.from('14', 'hex');
             setValue(id, buff1, reset);
 
@@ -141,7 +144,8 @@ port.on('data', function (data) {
                 running: true,
                 start: new Date(),
                 first: false,
-                second: false
+                second: false,
+                pause: false
             };
             console.log('register:'+id);
             register(id, pushHeartRate);
@@ -151,7 +155,7 @@ port.on('data', function (data) {
         function pushHeartRate() {
             arr[id].push(p);
 
-            if(arr[id].length === 1) {
+            if(arr[id].length === 1 && arrTimes[id].pause === false) {
                 const buff1 = Buffer.from('1e', 'hex');
                 setValue(id, buff1, reset);
 
