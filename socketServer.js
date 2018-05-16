@@ -172,7 +172,8 @@ function sendCommand(identifier, command, valueBuff, callback) {
         });
 
         var allocBuf = Buffer.alloc(4);
-        valueBuff = Buffer.from(valueBuff.toString('hex').match(/.{2}/g).reverse().join(""),'hex');
+
+        if(valueBuff.toString('hex') != '00') valueBuff = Buffer.from(valueBuff.toString('hex').match(/.{2}/g).reverse().join(""),'hex');
         valueBuff.copy(allocBuf,0);
         const size = allocBuf.length;
 

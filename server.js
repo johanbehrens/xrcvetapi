@@ -456,6 +456,17 @@ apiRoutes.post('/heartBeat/setValue', function(req, res) {
     }
 });
 
+apiRoutes.post('/heartBeat/setFlash', function(req, res) {
+    socketServer.setFlash(req.body.identifier, Buffer.from(req.body.value, 'hex'), done);
+    function done(err) {
+        if (err) {
+            console.log(err);
+            return res.send({success: false, msg: err.message});
+        }
+        return res.send({success: true });
+    }
+});
+
 apiRoutes.post('/heartBeat/ping', function(req, res) {
     socketServer.ping(req.body.identifier, done);
     function done(err) {

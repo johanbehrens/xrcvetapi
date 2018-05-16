@@ -7,11 +7,12 @@ var client = new Client();
 client.registerMethod("getAllClients", "http://localhost:8080/api/heartBeat/getAllClients", "GET");
 client.registerMethod("register", "http://localhost:8080/api/heartBeat/register", "POST");
 client.registerMethod("setValue", "http://localhost:8080/api/heartBeat/setValue", "POST");
+client.registerMethod("setFlash", "http://localhost:8080/api/heartBeat/setFlash", "POST");
 
 var arr = {};
 var arrTimes = {};
 var clients = [];
-var heartRateLimit = 64;
+var heartRateLimit = 70;
 
 var myVar = setInterval(checkValues, 1000);
 
@@ -76,7 +77,7 @@ function checkValues() {
             arrTimes[id].start = new Date();
             arrTimes[id].pause = false;
             arrTimes[id].pauseTime = 90;
-            const buff1 = Buffer.from('14', 'hex');
+            const buff1 = Buffer.from('00', 'hex');
             setValue(id, buff1, reset);
 
             function reset(data) {
@@ -138,6 +139,17 @@ function setValue(id, value, callback) {
     });
 }
 
+function setFlash(id, value, callback) {
+    var args = {
+        data: { identifier: id, value: value },
+        headers: { "Content-Type": "application/json" }
+    };
+    client.methods.setFlash(args, function (data, response) {
+        console.log(data);
+        return callback(data);
+    });
+}
+
 port.on('data', function (data) {
     //console.log(data);
     const buff = Buffer.from(data);
@@ -168,8 +180,8 @@ port.on('data', function (data) {
             arr[id].push(p);
 
             if(arr[id].length === 1 && arrTimes[id].pause === false) {
-                const buff1 = Buffer.from('1e', 'hex');
-                setValue(id, buff1, reset);
+                const buff1 = Buffer.from('00', 'hex');
+                setFlash(id, buff1, reset);
 
                 function reset(data) {
                     console.log('started');
