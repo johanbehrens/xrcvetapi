@@ -34,26 +34,38 @@ function checkValues() {
                 console.log('First: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].first = true;
                 arrTimes[id].pauseTime = 45;
-                send(avg <= heartRateLimit, '01');
+                send(avg <= heartRateLimit, '01', 10);
             }
             else if(diff >= 30 && diff < 60 && arrTimes[id].first === true && arrTimes[id].second === false) {
                 console.log('Second: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].second = true;
                 arrTimes[id].pauseTime = 60;
-                send(avg <= heartRateLimit, '02');
+                send(avg <= heartRateLimit, '02', 20);
             }
             else if(diff >= 60 &&  arrTimes[id].first === true && arrTimes[id].second === true) {
                 console.log('Last: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].pauseTime = 90;
-                send(true);
+                send(true, '', 40);
             }
             else if(diff >= 90){
                 arrTimes[id].running = false;
                 arrTimes[id].start = new Date();
             }
 
-            function send(done, val) {
+            function send(done, val, nrReadings) {
 
+                if(arr[id].length < nrReadings){
+                    const buff1 = Buffer.from('00', 'hex');
+                    setValue(id, buff1, toResetState);
+                    function toResetState(data) {
+                        arrTimes[id].running = false;
+                        arrTimes[id].first = false;
+                        arrTimes[id].second = false;
+                        arrTimes[id].pause = false;
+                        arr[id] = [];
+                    }
+                    return;
+                }
                 if(done === false) {
                     const buff1 = Buffer.from(val, 'hex');
                     setFlash(id, buff1, valueSent);
@@ -76,7 +88,6 @@ function checkValues() {
             }
         }
         else if(diff >= arrTimes[id].pauseTime) {
-            //arrTimes[id].running = true;
             arr[id] = [];
             arrTimes[id].start = new Date();
             arrTimes[id].pause = false;
