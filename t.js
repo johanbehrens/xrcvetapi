@@ -9,16 +9,18 @@ var buf = Buffer.alloc(256);
 
 
 
-var val = '123456789';
+var val = '1e';
+var allocBuf = Buffer.alloc(4);
 
 var toCopyBuffer = Buffer.from(val,'hex'); //var a = parseInt("10")
 toCopyBuffer = Buffer.from(toCopyBuffer.toString('hex').match(/.{2}/g).reverse().join(""),'hex');
+toCopyBuffer.copy(allocBuf,0);
 const size = toCopyBuffer.length;
 
 buf[0] = 0x5a;
 buf[1] = 1;
 buf[2] = size;
 
-toCopyBuffer.copy(buf, 3);
+allocBuf.copy(buf, 3);
 
 console.log(buf);

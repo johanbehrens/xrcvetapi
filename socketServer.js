@@ -171,17 +171,21 @@ function sendCommand(identifier, command, valueBuff, callback) {
             return client.identifier === identifier;
         });
 
+        const size = valueBuff.length;
+        var allocBuf = Buffer.alloc(4);
         valueBuff = Buffer.from(valueBuff.toString('hex').match(/.{2}/g).reverse().join(""),'hex');
+        valueBuff.copy(allocBuf,0);
+
         console.log('sendCommand'+identifier+ ' command:' + command + ' buff:' + valueBuff.toString('hex'));
 
-        const size = valueBuff.length;
+
 
         var buf = Buffer.alloc(256);
         buf[0] = 0x5a;
         buf[1] = command;
         buf[2] = size;
 
-        valueBuff.copy(buf, 3);
+        allocBuf.copy(buf, 3);
         var crcbuf = Buffer.from(crc16(buf.slice(0, 3 + size)), "hex");
         crcbuf.copy(buf, 3 + size);
 
