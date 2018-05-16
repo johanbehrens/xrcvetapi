@@ -12,7 +12,7 @@ client.registerMethod("setFlash", "http://localhost:8080/api/heartBeat/setFlash"
 var arr = {};
 var arrTimes = {};
 var clients = [];
-var heartRateLimit = 70;
+var heartRateLimit = 64;
 
 var myVar = setInterval(checkValues, 1000);
 
