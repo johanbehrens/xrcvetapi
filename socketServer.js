@@ -166,7 +166,7 @@ function ping(identifier, callback) {
 
 function sendCommand(identifier, command, valueBuff, callback) {
     try {
-        console.log('sendCommand'+identifier+ ' ' + command + ' ' + valueBuff);
+        console.log('sendCommand'+identifier+ ' command:' + command + ' buff:' + valueBuff.toString());
         var displayClient = clients.find(function (client) {
             return client.identifier === identifier;
         });
@@ -176,6 +176,7 @@ function sendCommand(identifier, command, valueBuff, callback) {
         buf[0] = 0x5a;
         buf[1] = command;
         buf[2] = size;
+        // val = (uint32_t)buf[3] | ((uint32_t)buf[4] << 8) | ((uint32_t)dPtr[2] << 16) | ((uint32_t)dPtr[3] << 24);
         valueBuff.copy(buf, 3);
         var crcbuf = Buffer.from(crc16(buf.slice(0, 3 + size)), "hex");
         crcbuf.copy(buf, 3 + size);
