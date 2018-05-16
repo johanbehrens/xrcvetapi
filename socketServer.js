@@ -171,9 +171,7 @@ function sendCommand(identifier, command, valueBuff, callback) {
             return client.identifier === identifier;
         });
 
-        var toCopyBuffer = Buffer.alloc(4);
-        valueBuff.copy(toCopyBuffer, 0);
-        valueBuff = Buffer.from(toCopyBuffer.toString('hex').match(/.{2}/g).reverse().join(""),'hex');
+        valueBuff = Buffer.from(valueBuff.toString('hex').match(/.{2}/g).reverse().join(""),'hex');
         console.log('sendCommand'+identifier+ ' command:' + command + ' buff:' + valueBuff.toString('hex'));
 
         const size = valueBuff.length;

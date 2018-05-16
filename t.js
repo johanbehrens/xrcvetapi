@@ -9,19 +9,16 @@ var buf = Buffer.alloc(256);
 
 
 
-var val = '1234567734567';
+var val = '123456789';
 
-var x = Buffer.from(val,'hex'); //var a = parseInt("10")
+var toCopyBuffer = Buffer.from(val,'hex'); //var a = parseInt("10")
+toCopyBuffer = Buffer.from(toCopyBuffer.toString('hex').match(/.{2}/g).reverse().join(""),'hex');
+const size = toCopyBuffer.length;
 
-var toCopyBuffer = Buffer.alloc(4);
-x.copy(toCopyBuffer, 0);
-x = Buffer.from(toCopyBuffer.toString('hex').match(/.{2}/g).reverse().join(""),'hex');
-
-const size = x.length;
 buf[0] = 0x5a;
 buf[1] = 1;
 buf[2] = size;
 
-x.copy(buf, 3);
+toCopyBuffer.copy(buf, 3);
 
 console.log(buf);
