@@ -5,14 +5,14 @@ var IpConfig = require('./app/models/ipconfig');
 const commands = {
     ping: 1,
     setValue:2,
-    flash: 3,
+    setFlash: 3,
     count: 4
 };
 
 var client;
 var clients = [];
 
-module.exports = { setValue:setValue, ping:ping, registerHeartbeatDevice:registerHeartbeatDevice, setIPAddress:setIPAddress, getAllClients:getAllClients};
+module.exports = { setValue:setValue, setFlash:setFlash, ping:ping, registerHeartbeatDevice:registerHeartbeatDevice, setIPAddress:setIPAddress, getAllClients:getAllClients};
 
 function registerHeartbeatDevice(identifier, callback) {
     IpConfig.findOne({
@@ -139,6 +139,16 @@ function setValue(identifier, valueBuffer, callback) {
             return callback(err);
         }
         return sendCommand(identifier, commands.setValue, valueBuffer, callback);
+    }
+}
+
+function setFlash(identifier, valueBuffer, callback) {
+    socketClient(identifier, connected);
+    function connected(err) {
+        if (err) {
+            return callback(err);
+        }
+        return sendCommand(identifier, commands.setFlash, valueBuffer, callback);
     }
 }
 
