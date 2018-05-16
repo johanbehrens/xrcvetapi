@@ -34,13 +34,13 @@ function checkValues() {
                 console.log('First: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].first = true;
                 arrTimes[id].pauseTime = 45;
-                send(avg <= heartRateLimit, 1);
+                send(avg <= heartRateLimit, '01');
             }
             else if(diff >= 30 && diff < 60 && arrTimes[id].first === true && arrTimes[id].second === false) {
                 console.log('Second: ' + diff + ' count' + arr[id].length);
                 arrTimes[id].second = true;
                 arrTimes[id].pauseTime = 60;
-                send(avg <= heartRateLimit, 2);
+                send(avg <= heartRateLimit, '02');
             }
             else if(diff >= 60 &&  arrTimes[id].first === true && arrTimes[id].second === true) {
                 console.log('Last: ' + diff + ' count' + arr[id].length);
@@ -55,8 +55,7 @@ function checkValues() {
             function send(done, val) {
 
                 if(done === false) {
-                    const hexString = val.toString(16);
-                    const buff1 = Buffer.from(hexString, 'hex');
+                    const buff1 = Buffer.from(val, 'hex');
                     setFlash(id, buff1, valueSent);
                     return;
                 };
