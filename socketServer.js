@@ -186,6 +186,9 @@ function sendCommand(identifier, command, valueBuff, callback) {
         valueBuff.copy(buf, 3);
         var crcbuf = Buffer.from(crc16(buf.slice(0, 3 + size)), "hex");
         crcbuf.copy(buf, 3 + size);
+
+        console.log(buf);
+        console.log(buf.slice(0, 3 + size + 2));
         if(displayClient === undefined){
             console.log('Client is undefined');
             return callback('Client is undefined');
