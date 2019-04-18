@@ -5,6 +5,7 @@ var passport	= require('passport');
 require('../config/passport')(passport);
 var ObjectID = require('mongodb').ObjectID;
 const ISODate = Date;
+const image2base64 = require('image-to-base64');
 
 router.post('/', AddLocation);
 router.get('/', GetLocations);
@@ -36,7 +37,25 @@ function GetLocations(req, res) {
                 error: err
                 });
         }
-        else res.send(doc.map(l => { delete l.locations; return l; }));
+
+        /*
+        doc.map(location =>{
+            var path = location.locations.map(l => l.latitude+','+l.longitude).reduce((y,item) => y+'|'+item);
+                            image2base64(`http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=300x300&path=${path}`) 
+                            .then(response => {
+                                    var db = getDb();
+                                    db.collection('profilepicture').insertOne({image: response}, function(err, image){
+                                        imageId = image.ops[0]._id;
+                                        db.collection('location').updateOne(
+                                            { locationRideId: location.locationRideId },{$set :{imageId:imageId}}, function(err, result) {
+                                                //res.send(result);
+                                            })
+                                    });
+                                }
+                            )
+        });
+*/
+        res.send(doc.map(l => { delete l.locations; return l; }));
     });
 }
 
@@ -62,7 +81,7 @@ function AddLocation(req, res) {
                 });
         }
         else {
-            if(!location){
+            if(!location && type == "START"){
                 let loc = {
                     locationRideId,
                     userId,
@@ -85,11 +104,13 @@ function AddLocation(req, res) {
                         type
                     }]
                 };
-                db.collection('location').insertOne(loc, function(err, location){
-                    res.send(location.ops[0]);
+                db.collection('location').insertOne(loc, function(err, l){
+                    res.send(l.ops[0]);
                 })
             }
             else {
+                if(!location) res.send({});
+                
                 db.collection('location').updateOne(
                     { locationRideId: locationRideId },
                     { $push: { locations: {
@@ -102,8 +123,22 @@ function AddLocation(req, res) {
                         odometer: req.body[6],
                         timestamp: new ISODate(req.body[7]),
                         type
-                    } } }, function(err, location){
-                        res.send(location.result);
+                    } } }, function(err, l){
+                        if(type === 'STOP'){
+                            var path = location.locations.map(l => l.latitude+','+l.longitude).reduce((y,item) => y+'|'+item);
+                            image2base64(`http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=300x300&path=${path}`) 
+                            .then(response => {
+                                    var db = getDb();
+                                    db.collection('profilepicture').insertOne({image: response}, function(err, image){
+                                        imageId = image.ops[0]._id;
+                                        db.collection('location').updateOne(
+                                            { locationRideId: locationRideId },{$set :{imageId:imageId}}, function(err, result) {
+                                                res.send(result);
+                                            })
+                                    });
+                                }
+                            )
+                        }
                     })
                  
             }
