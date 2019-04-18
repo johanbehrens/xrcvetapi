@@ -2,6 +2,7 @@ const config = require("../config/database");
 const getDb = require("../db").getDb;
 var fetch = require('node-fetch');
 var crypto = require('crypto');
+var ObjectID = require('mongodb').ObjectID;
 
 module.exports = (function() {
     'use strict';
@@ -12,51 +13,34 @@ module.exports = (function() {
         res.json({'foo':'bar'});
     });
 
-    router.post('/login', function(req, res) {
-        if(req.body && req.body.username && req.body.password)
-        {
-            var db = getDb();
-            db.collection('users').findOne({username: req.body.username}, function(err, user){
-                if(err) {
-                    res.status(500);
-                    res.json({
-                        message: err.message,
-                        error: err
-                        });
-                }
-                else { 
-                    if(!user) { //User exists 
-                        ImportUser(req.body.username, function(err, user){
-                            if(err){
-                                res.status(500);
-                                res.json({
-                                    message: err.message,
-                                    error: err
-                                    });
-                                return ;
-                            }
-                            if(user) {
-                                db.collection('users').insertOne(user, function(err, doc){
-                                    if(err) {
-                                        res.status(500);
-                                        res.json({
-                                            message: err.message,
-                                            error: err
-                                            });
-                                    }
-                                    else res.send(doc);
-                                });
-                            }
-                        });
-                    }
-                    else { //Does User exist on www.xrc.co.za
-                        Authenticate(user, req.body.password, req, res);
-                    }
-                }
-            });            
-        }
-        else return res.json({'error':'Wrong Username or Password'});
+    router.get('/images/:id', function(req, res) {
+        var db = getDb();
+        var id = new ObjectID(req.params.id);
+            db.collection('profilepicture').findOne({_id: id}, function(err, doc){
+                var img = new Buffer(doc.image, 'base64');
+
+   res.writeHead(200, {
+     'Content-Type': 'image/png',
+     'Content-Length': img.length
+   });
+   res.end(img); 
+
+            });
     });
+
+    router.post('/upload', function(req, res) {
+        if(req.body.files) {
+            var db = getDb();
+            db.collection('profilepicture').insertOne({image: req.body.files}, function(err, image){
+                res.send(image.ops[0]._id);
+            })
+        }
+        
+       else return res.json({'foo':'bar'});
+    });
+
+    router.post('/login', Login);
+    router.post('/register', Register);
 
     router.get('/requestToken/:name', function(req, res) {
         if(req.params.name)
@@ -128,6 +112,62 @@ module.exports = (function() {
         
         let t = { error: 'Wrong Username or Password'};	
         return res.send(t);
+    }
+
+    function Register(req, res) {
+        if(req.body && req.body.username && req.body.pass1 && req.body.pass2)
+        {
+            var db = getDb();
+            db.collection('users').findOne({username: req.body.username}, function(err, user){
+            });
+        }    
+        else return res.json({'error':'Wrong Username or Password'});
+    }
+
+    function Login(req, res) {
+        if(req.body && req.body.username && req.body.password)
+        {
+            var db = getDb();
+            db.collection('users').findOne({username: req.body.username}, function(err, user){
+                if(err) {
+                    res.status(500);
+                    res.json({
+                        message: err.message,
+                        error: err
+                        });
+                }
+                else { 
+                    if(!user) { //User exists 
+                        ImportUser(req.body.username, function(err, user){
+                            if(err){
+                                res.status(500);
+                                res.json({
+                                    message: err.message,
+                                    error: err
+                                    });
+                                return ;
+                            }
+                            if(user) {
+                                db.collection('users').insertOne(user, function(err, doc){
+                                    if(err) {
+                                        res.status(500);
+                                        res.json({
+                                            message: err.message,
+                                            error: err
+                                            });
+                                    }
+                                    else res.send(doc);
+                                });
+                            }
+                        });
+                    }
+                    else { //Does User exist on www.xrc.co.za
+                        Authenticate(user, req.body.password, req, res);
+                    }
+                }
+            });            
+        }
+        else return res.json({'error':'Wrong Username or Password'});
     }
 
     return router;

@@ -22,21 +22,31 @@ const initDb = require("./db").initDb;
 
 var bodyParser = require('body-parser');
 var events = require('./routes/events');
+var horses = require('./routes/horses');
+var riders = require('./routes/riders');
+var rides = require('./routes/rides');
 var track = require('./routes/track');
+var location = require('./routes/location');
 var passport	= require('passport');
+const fileUpload = require('express-fileupload');
 const app = express();
 const port = 3000
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
 app.use(passport.initialize());
+app.use(fileUpload());
 
 require('./config/passport')(passport);
 var routes = require('./routes/router');
 
 app.use('/', routes);
-app.use('/events', events);
-app.use('/track', track);
+app.use('/events', passport.authenticate('jwt', { session: false}), events);
+app.use('/track', passport.authenticate('jwt', { session: false}), track);
+app.use('/horses', passport.authenticate('jwt', { session: false}), horses);
+app.use('/riders', passport.authenticate('jwt', { session: false}), riders);
+app.use('/rides', passport.authenticate('jwt', { session: false}), rides);
+app.use('/location', passport.authenticate('jwt', { session: false}), location);
 
 initDb(function (err) {
     app.listen(port, function (err) {

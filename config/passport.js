@@ -10,7 +10,7 @@ module.exports = function(passport) {
 
     passport.use(new JwtStrategy(opts, function(jwt_payload, done) {
         var db = getDb();
-        db.collection('keys').findOne({name: jwt_payload.name, active: true}, function(err, client) {
+        db.collection('users').findOne({emailaddress: jwt_payload.id}, function(err, client) {
             if (err) {
                 return done(err, false);
             }
