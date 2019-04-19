@@ -25,10 +25,12 @@ var events = require('./routes/events');
 var horses = require('./routes/horses');
 var riders = require('./routes/riders');
 var rides = require('./routes/rides');
+var images = require('./routes/images');
 var track = require('./routes/track');
 var location = require('./routes/location');
 var passport	= require('passport');
 const fileUpload = require('express-fileupload');
+const getDb = require("./db").getDb;
 const app = express();
 const port = 3000
 
@@ -47,6 +49,7 @@ app.use('/horses', passport.authenticate('jwt', { session: false}), horses);
 app.use('/riders', passport.authenticate('jwt', { session: false}), riders);
 app.use('/rides', passport.authenticate('jwt', { session: false}), rides);
 app.use('/location', passport.authenticate('jwt', { session: false}), location);
+app.use('/images', images);
 
 initDb(function (err) {
     app.listen(port, function (err) {

@@ -81,7 +81,7 @@ function AddLocation(req, res) {
                 });
         }
         else {
-            if(!location && type == "START"){
+            if(!location){
                 let loc = {
                     locationRideId,
                     userId,
@@ -124,7 +124,7 @@ function AddLocation(req, res) {
                         timestamp: new ISODate(req.body[7]),
                         type
                     } } }, function(err, l){
-                        if(type === 'STOP'){
+                        if(type === 'STOP' && location){
                             var path = location.locations.map(l => l.latitude+','+l.longitude).reduce((y,item) => y+'|'+item);
                             image2base64(`http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=300x300&path=${path}`) 
                             .then(response => {
@@ -139,6 +139,7 @@ function AddLocation(req, res) {
                                 }
                             )
                         }
+                        else res.send(l);
                     })
                  
             }

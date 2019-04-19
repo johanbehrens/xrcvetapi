@@ -13,21 +13,6 @@ module.exports = (function() {
         res.json({'foo':'bar'});
     });
 
-    router.get('/images/:id', function(req, res) {
-        var db = getDb();
-        var id = new ObjectID(req.params.id);
-            db.collection('profilepicture').findOne({_id: id}, function(err, doc){
-                var img = new Buffer(doc.image, 'base64');
-
-   res.writeHead(200, {
-     'Content-Type': 'image/png',
-     'Content-Length': img.length
-   });
-   res.end(img); 
-
-            });
-    });
-
     router.post('/upload', function(req, res) {
         if(req.body.files) {
             var db = getDb();
@@ -124,8 +109,115 @@ module.exports = (function() {
         else return res.json({'error':'Wrong Username or Password'});
     }
 
+    function getFacebookUser(token,req, res) {
+        fetch("https://graph.facebook.com/v2.5/me?fields=id,name,email,first_name,last_name&access_token="+token, {
+            headers: {
+                'Accept': 'application/json',
+                'Content-Type': 'application/json'
+            },
+            method: "GET"
+        })
+        .then(function(response) {
+            return response.json();
+        })
+        .then(function(user) {
+            let fbid = user.id;                 // To Get Facebook ID
+            let fbfullname = user.name; // To Get Facebook full name
+            let femail = user.email;    // To Get Facebook email ID
+            let fname = user.first_name;    // To Get Facebook email ID
+            let flastname = user.last_name; 
+
+            var db = getDb();
+            db.collection('users').findOne({username: femail}, function(err, user){
+                if(err) {
+                    res.status(500);
+                    res.json({
+                        message: err.message,
+                        error: err
+                        });
+                }
+                if(user){
+                    var token = jwt.encode({"id":user.username}, config.secret);
+                    var response = {
+                        token: 'JWT ' + token,
+                        username: user.username
+                    };
+                    
+                    return res.send(response);
+                }
+                else { //get user from xrc
+                    ImportUser(femail, function(err, user){
+                        if(user) {
+                            db.collection('users').insertOne(user, function(err, doc){
+                                if(err) {
+                                    res.status(500);
+                                    res.json({
+                                        message: err.message,
+                                        error: err
+                                        });
+                                }
+                                else {
+                                    var token = jwt.encode({"id":user.username}, config.secret);
+                                    var response = {
+                                        token: 'JWT ' + token,
+                                        username: user.username
+                                    };
+                                    
+                                    return res.send(response);
+                                }
+                            });
+                        }
+                        else {
+                            let user = {
+                                name: fname,
+                                surname: flastname,
+                                username:  femail,
+                                emailaddress : femail,
+                                Fuid: fbid,
+                                Funame: fbfullname,
+                                Ffname: fbfullname,
+                                Femail: femail,
+                                isActive: 1
+                            };
+                            db.collection('users').insertOne(user, function(err, doc){
+                                if(err) {
+                                    res.status(500);
+                                    res.json({
+                                        message: err.message,
+                                        error: err
+                                        });
+                                }
+                                else {
+                                    var token = jwt.encode({"id":user.username}, config.secret);
+                                    var response = {
+                                        token: 'JWT ' + token,
+                                        username: user.username
+                                    };
+                                    
+                                    return res.send(response);
+                                }
+                            });
+                        }
+                    });
+                }
+            });
+
+
+        }).catch(function(err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        });
+
+    }
+
     function Login(req, res) {
-        if(req.body && req.body.username && req.body.password)
+        if(req.body && req.body.ftoken) {
+            getFacebookUser(req.body.ftoken,req, res);
+        }
+        else if(req.body && req.body.username && req.body.password)
         {
             var db = getDb();
             db.collection('users').findOne({username: req.body.username}, function(err, user){
@@ -156,9 +248,10 @@ module.exports = (function() {
                                             error: err
                                             });
                                     }
-                                    else res.send(doc);
+                                    Authenticate(user, req.body.password, req, res);
                                 });
                             }
+                            else res.json({'error':'Wrong Username or Password: 2'});
                         });
                     }
                     else { //Does User exist on www.xrc.co.za
@@ -167,7 +260,7 @@ module.exports = (function() {
                 }
             });            
         }
-        else return res.json({'error':'Wrong Username or Password'});
+        else return res.json({'error':'Wrong Username or Password: 1'});
     }
 
     return router;
