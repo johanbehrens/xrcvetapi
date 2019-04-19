@@ -100,13 +100,51 @@ module.exports = (function() {
     }
 
     function Register(req, res) {
-        if(req.body && req.body.username && req.body.pass1 && req.body.pass2)
-        {
-            var db = getDb();
-            db.collection('users').findOne({username: req.body.username}, function(err, user){
-            });
-        }    
-        else return res.json({'error':'Wrong Username or Password'});
+
+        if(req.body && !req.body.username) return res.json({'error':'Email required'});
+        if(req.body && !req.body.password) return res.json({'error':'Password required'});
+        if(req.body && !req.body.confirmPassword) return res.json({'error':'Confirm password'});
+        if(req.body && !(req.body.confirmPassword === req.body.password)) return res.json({'error':'Password must match'});
+        var db = getDb();
+        db.collection('users').findOne({username: req.body.username}, function(err, user){
+            if(err) {
+                res.status(500);
+                res.json({
+                    message: err.message,
+                    error: err
+                    });
+            }
+            if(user) {
+                return res.json({'error':'User exists'});
+            }
+        else {
+            req.body.salt = 'abc';
+            var password = req.body.salt+crypto.createHash('sha256').update(req.body.password).digest('hex');
+            var hash = crypto.createHash('sha256').update(password).digest('hex');
+
+            delete req.body.confirmPassword;
+            req.body.emailaddress = req.body.username;
+            req.body.password = hash;
+                db.collection('users').insertOne(req.body, function(err, doc){
+                if(err) {
+                    res.status(500);
+                    res.json({
+                        message: err.message,
+                        error: err
+                        });
+                }
+                else {
+                    var token = jwt.encode({"id":req.body.emailaddress}, config.secret);
+                    var response = {
+                        token: 'JWT ' + token,
+                        username: req.body.emailaddress
+                    };
+                    
+                    return res.send(response);
+                }
+                });
+            }
+        });
     }
 
     function getFacebookUser(token,req, res) {
