@@ -27,7 +27,7 @@ function GetHorse(req, res) {
 function GetHorses(req, res) {
     var db = getDb();
 
-    db.collection('horse').find({}).toArray(function(err, doc){
+    db.collection('horse').find({userId: req.user._id}).toArray(function(err, doc){
         if(err) {
             res.status(500);
             res.json({
@@ -43,6 +43,7 @@ function AddHorse(req, res) {
     var db = getDb();
 
     req.body._id = new ObjectID(req.body._id);
+    req.body.userId = req.user._id;
 
     db.collection('horse').findOne({_id: req.body._id}, function(err, horse){
         if(err) {

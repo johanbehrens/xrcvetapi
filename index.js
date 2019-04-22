@@ -26,7 +26,6 @@ var horses = require('./routes/horses');
 var riders = require('./routes/riders');
 var rides = require('./routes/rides');
 var images = require('./routes/images');
-var track = require('./routes/track');
 var location = require('./routes/location');
 var passport	= require('passport');
 const fileUpload = require('express-fileupload');
@@ -44,7 +43,6 @@ var routes = require('./routes/router');
 
 app.use('/', routes);
 app.use('/events', passport.authenticate('jwt', { session: false}), events);
-app.use('/track', passport.authenticate('jwt', { session: false}), track);
 app.use('/horses', passport.authenticate('jwt', { session: false}), horses);
 app.use('/riders', passport.authenticate('jwt', { session: false}), riders);
 app.use('/rides', passport.authenticate('jwt', { session: false}), rides);

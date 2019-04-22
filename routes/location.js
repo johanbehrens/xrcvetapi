@@ -4,6 +4,7 @@ const getDb = require("../db").getDb;
 var passport	= require('passport');
 require('../config/passport')(passport);
 var ObjectID = require('mongodb').ObjectID;
+var { SendEmail }	= require('./email');
 const ISODate = Date;
 const image2base64 = require('image-to-base64');
 
@@ -28,8 +29,7 @@ function GetLocation(req, res) {
 
 function GetLocations(req, res) {
     var db = getDb();
-
-    db.collection('location').find({}).sort( { date: -1 } ).toArray(function(err, doc){
+    db.collection('location').find({userId: req.user._id}).sort( { date: -1 } ).toArray(function(err, doc){
         if(err) {
             res.status(500);
             res.json({
@@ -37,33 +37,50 @@ function GetLocations(req, res) {
                 error: err
                 });
         }
-
-        /*
-        doc.map(location =>{
-            var path = location.locations.map(l => l.latitude+','+l.longitude).reduce((y,item) => y+'|'+item);
-                            image2base64(`http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=300x300&path=${path}`) 
-                            .then(response => {
-                                    var db = getDb();
-                                    db.collection('profilepicture').insertOne({image: response}, function(err, image){
-                                        imageId = image.ops[0]._id;
-                                        db.collection('location').updateOne(
-                                            { locationRideId: location.locationRideId },{$set :{imageId:imageId}}, function(err, result) {
-                                                //res.send(result);
-                                            })
-                                    });
-                                }
-                            )
-        });
-*/
         res.send(doc.map(l => { delete l.locations; return l; }));
     });
 }
 
+
+
+function createStaticImage(location, res) {
+    if(location.locations > 100) {
+        var arr = [];
+        var maxVal = 100;
+        var delta = Math.floor( location.locations.length / maxVal );
+        for (i = 0; i < location.locations.length; i=i+delta) {
+            arr.push(location.locations[i]);
+        }
+        location.locations = arr;
+    }
+
+    var path = location.locations.map(l => l.latitude+','+l.longitude).reduce((y,item) => y+'|'+item);
+    let url = `http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=300x300&path=${path}`;
+
+    image2base64(url)
+    .then(response => {
+            var db = getDb();
+            db.collection('profilepicture').insertOne({image: response}, function(err, image){
+                imageId = image.ops[0]._id;
+                db.collection('location').updateOne(
+                    { locationRideId: location.locationRideId },{$set :{
+                        imageId:imageId, 
+                        end: location.odometer
+                    }}, function(err, result) {
+                        res.send(result);
+                    })
+            });
+        }
+    )
+}
+
 function AddLocation(req, res) {
+    let locationRideId = req.headers.id;
+    if(!locationRideId) return res.send();;
     var db = getDb();
 
     let type = req.headers.type;
-    let locationRideId = req.headers.id;
+    
     let username = req.headers.username;
     let horseId = req.headers.horseid;
     let riderId = req.headers.riderid;
@@ -125,19 +142,15 @@ function AddLocation(req, res) {
                         type
                     } } }, function(err, l){
                         if(type === 'STOP' && location){
-                            var path = location.locations.map(l => l.latitude+','+l.longitude).reduce((y,item) => y+'|'+item);
-                            image2base64(`http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=300x300&path=${path}`) 
-                            .then(response => {
-                                    var db = getDb();
-                                    db.collection('profilepicture').insertOne({image: response}, function(err, image){
-                                        imageId = image.ops[0]._id;
-                                        db.collection('location').updateOne(
-                                            { locationRideId: locationRideId },{$set :{imageId:imageId}}, function(err, result) {
-                                                res.send(result);
-                                            })
-                                    });
-                                }
-                            )
+                            createStaticImage(location, res)
+                        }
+                        else if(type === 'SOS') {
+                            SendEmail('behrens.johan@gmail.com','SOS - Help needed',`<html>There was a SOS sent at ${req.body[0]},${req.body[1]} <a href="https://www.google.com/maps/place/${req.body[0]},${req.body[1]}">Click Here</a></html>`);
+                            res.send(l);
+                        }
+                        else if(type === 'VET') {
+                            SendEmail('behrens.johan@gmail.com','VET - Help needed',`<html>There was a VET sent at ${req.body[0]},${req.body[1]} <a href="https://www.google.com/maps/place/${req.body[0]},${req.body[1]}">Click Here</a></html>`);
+                            res.send(l);
                         }
                         else res.send(l);
                     })

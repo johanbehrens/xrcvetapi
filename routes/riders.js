@@ -27,7 +27,7 @@ function GetRider(req, res) {
 function GetRiders(req, res) {
     var db = getDb();
 
-    db.collection('rider').find({}).toArray(function(err, doc){
+    db.collection('rider').find({userId: req.user._id}).toArray(function(err, doc){
         if(err) {
             res.status(500);
             res.json({
@@ -43,6 +43,7 @@ function AddRider(req, res) {
     var db = getDb();
 
     req.body._id = new ObjectID(req.body._id);
+    req.body.userId = req.user._id;
 
     db.collection('rider').findOne({_id: req.body._id}, function(err, rider){
         if(err) {
