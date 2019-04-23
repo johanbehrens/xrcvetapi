@@ -27,7 +27,9 @@ function GetHorse(req, res) {
 function GetHorses(req, res) {
     var db = getDb();
 
+    console.log('GetHorses');
     db.collection('horse').find({userId: req.user._id}).toArray(function(err, doc){
+        console.log('return GetHorses');
         if(err) {
             res.status(500);
             res.json({

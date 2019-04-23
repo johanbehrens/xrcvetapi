@@ -26,8 +26,9 @@ function GetRide(req, res) {
 
 function GetRides(req, res) {
     var db = getDb();
-
+    console.log('GetRides');
     db.collection('ride').find({}).toArray(function(err, doc){
+        console.log('return GetRides');
         if(err) {
             res.status(500);
             res.json({

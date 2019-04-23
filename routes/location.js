@@ -11,11 +11,12 @@ const image2base64 = require('image-to-base64');
 router.post('/', AddLocation);
 router.get('/', GetLocations);
 router.get('/:id', GetLocation);
+router.delete('/:id', DeleteLocation);
 
-function GetLocation(req, res) {
+function DeleteLocation(req, res) {
     var db = getDb();
-
-    db.collection('location').findOne({_id: parseInt(req.params.id)}, function(err, doc){
+    console.log('DelLocation:'+req.params.id);
+    db.collection('location').deleteOne({_id: ObjectID(req.params.id)}, function(err, location){
         if(err) {
             res.status(500);
             res.json({
@@ -23,7 +24,28 @@ function GetLocation(req, res) {
                 error: err
                 });
         }
-        else res.send(doc);
+        else if(!location) res.send();
+        else res.send();
+    });
+}
+
+function GetLocation(req, res) {
+    var db = getDb();
+
+    console.log('GetLocation:'+req.params.id);
+    if(!req.params.id || req.params.id=='undefined') return res.send();
+    db.collection('location').findOne({_id: ObjectID(req.params.id)}, function(err, location){
+        console.log('return GetLocation:'+req.params.id);
+        if(err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+                });
+        }
+        else {
+            if(!location.imageId) createStaticImage(location, res);
+            else res.send(location);}
     });
 }
 
@@ -44,10 +66,11 @@ function GetLocations(req, res) {
 
 
 function createStaticImage(location, res) {
-    if(location.locations > 100) {
+    if(location.locations && location.locations.length > 100) {
         var arr = [];
         var maxVal = 100;
         var delta = Math.floor( location.locations.length / maxVal );
+        console.log(delta);
         for (i = 0; i < location.locations.length; i=i+delta) {
             arr.push(location.locations[i]);
         }
@@ -56,7 +79,7 @@ function createStaticImage(location, res) {
 
     var path = location.locations.map(l => l.latitude+','+l.longitude).reduce((y,item) => y+'|'+item);
     let url = `http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=300x300&path=${path}`;
-
+console.log(url);
     image2base64(url)
     .then(response => {
             var db = getDb();
