@@ -3,6 +3,7 @@ var router = express.Router();
 const getDb = require("../db").getDb;
 var passport = require('passport');
 var {GetUserIds} = require('../helpers/user');
+var {SendNotification} = require('../helpers/notification');
 require('../config/passport')(passport);
 var ObjectID = require('mongodb').ObjectID;
 
@@ -23,13 +24,8 @@ function GetRider(req, res) {
         }
         else {
             if (rider) {
-                rider.edit = false;
-                if (req.user.subscription == 0 && rider.userId == req.user._id && rider.default == true) {
-                    rider.edit = true;
-                }
-                if (req.user.subscription == 1 && rider.userId == req.user._id) {
-                    rider.edit = true;
-                }
+                rider.own = rider.userId.toString() == req.user._id.toString();
+                rider.edit = rider.own && (req.user.valid || rider.default);
             }
             res.send(rider);
         }
@@ -53,17 +49,8 @@ function GetRiders(req, res) {
             }
             else {
                 doc.map(rider => {
-                    rider.edit = false;
-                    rider.own = false;
-                    if (rider.userId.toString() == req.user._id.toString()) {
-                        rider.own = true;
-                        if (req.user.subscription == 1) {
-                            rider.edit = true;
-                        }
-                        else if (rider.default == true) {
-                            rider.edit = true;
-                        }
-                    }
+                    rider.own = rider.userId.toString() == req.user._id.toString();
+                    rider.edit = rider.own && (req.user.valid || rider.default);
                 });
                 res.send(doc);
             }
@@ -89,6 +76,7 @@ function AddRider(req, res) {
             if (!rider) {
                 db.collection('rider').insertOne(req.body, function (err, rider) {
                     res.send(rider.ops[0]);
+                    SendNotification(req.user._id, 'Added Rider','Great Job');
                 })
             }
             else {

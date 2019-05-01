@@ -4,15 +4,36 @@ const getDb = require("../db").getDb;
 var passport = require('passport');
 require('../config/passport')(passport);
 var ObjectID = require('mongodb').ObjectID;
-var { SendEmail } = require('./email');
+var { SendEmail } = require('../helpers/email');
 const ISODate = Date;
 const image2base64 = require('image-to-base64');
 var { GetUserIds } = require('../helpers/user');
 
 router.post('/', AddLocation);
 router.get('/', GetLocations);
+router.post('/update', GetLocationUpdate);
+router.get('/liveUpdates/:raceid', GetLiveLocationsForRace);
 router.get('/:id', GetLocation);
 router.delete('/:id', DeleteLocation);
+
+function GetLiveLocationsForRace(req, res) {
+    var db = getDb();
+
+    console.log('GetLiveLocationsForRace');
+    db.collection('location').aggregate(raceLocationsAggregate(req.params.raceid)).toArray(function (err, locations) {
+        console.log('return GetLiveLocationsForRace');
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else {
+            res.send(locations);
+        }
+    });
+}
 
 function DeleteLocation(req, res) {
     var db = getDb();
@@ -30,6 +51,26 @@ function DeleteLocation(req, res) {
     });
 }
 
+function GetLocationUpdate(req, res) {
+    var db = getDb();
+
+    console.log('GetLocationUpdate:' + req.body.id);
+    if (!req.body.id) return res.send();
+    db.collection('location').findOne({ _id: ObjectID(req.body.id) }, function (err, location) {
+        console.log('return GetLocationUpdate:' + req.body.id);
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        if (!location) return res.send([]);
+
+        res.send(location.locations.filter(loc => loc.timestamp > new Date(req.body.timestamp)));
+    });
+}
+
 function GetLocation(req, res) {
     var db = getDb();
 
@@ -37,7 +78,6 @@ function GetLocation(req, res) {
     if (!req.params.id || req.params.id == 'undefined') return res.send();
     db.collection('location').findOne({ _id: ObjectID(req.params.id) }, function (err, location) {
 
-        console.log('return GetLocation:' + req.params.id);
         console.log('return GetLocation:' + req.params.id);
         if (err) {
             res.status(500);
@@ -48,7 +88,7 @@ function GetLocation(req, res) {
         }
         if (!location) return res.send({});
 
-        if (!location.imageId) createStaticImage(location);
+        if (!location.imageId && location.userId.toString() == req.user._id.toString()) createStaticImage(location);
 
         location.edit = false;
         location.own = false;
@@ -62,14 +102,11 @@ function GetLocation(req, res) {
 
 function GetLocations(req, res) {
     var db = getDb();
-    GetUserIds(req.user._id, doGetLocations)
+    GetUserIds(req.user._id, doGetLocations);
 
     function doGetLocations(userIds) {
         console.log('GetLocations');
-        db.collection('location').find({ userId: { $in: userIds } },
-            { locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1 },
-            { date: -1 }
-        ).toArray(function (err, location) {
+        db.collection('location').aggregate(locationAggregate(userIds)).toArray(function (err, location) {
             console.log('return GetLocations');
             if (err) {
                 res.status(500);
@@ -136,8 +173,8 @@ function AddLocation(req, res) {
     let type = req.headers.type;
 
     let username = req.headers.username;
-    let horseId = req.headers.horseid;
-    let riderId = req.headers.riderid;
+    let horseId = ObjectID(req.headers.horseid);
+    let riderId = ObjectID(req.headers.riderid);
     let raceId = req.headers.raceid;
     let riderNumber = req.headers.ridernumber;
     if (req.body.location) req.body = req.body.location;
@@ -219,6 +256,82 @@ function AddLocation(req, res) {
         }
 
     });
+}
+
+function locationAggregate(Ids) {
+    return [{
+        $match: {
+            userId: { $in: Ids }
+        }
+    },
+    {
+        $project: { locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1, imageId: 1, trackId: 1 }
+    },
+    {
+        $lookup: {
+            "from": "rider",
+            "localField": "riderId",
+            "foreignField": "_id",
+            "as": "rider"
+        }
+    },
+    {
+        $unwind: {
+            path: "$rider"
+        }
+    },
+    {
+        $lookup: {
+            "from": "horse",
+            "localField": "horseId",
+            "foreignField": "_id",
+            "as": "horse"
+        }
+    },
+    {
+        $unwind: {
+            path: "$horse"
+        }
+    },
+    {
+        $project: {
+            locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1,
+            name: "$rider.name", surname: "$rider.surname", riderImageId: "$rider.imageId",
+            hname: "$horse.name", horseImageId: "$horse.imageId",
+            imageId: 1, trackId: 1
+        }
+    },
+    {
+        $sort: {
+            date: -1
+        }
+    }
+    ];
+
+}
+
+function raceLocationsAggregate(raceId) {
+    return [{
+        $match: {
+            raceId: raceId,
+            end: { $exists: false}
+        }
+    }, {
+        $lookup: {
+            "from": "rider",
+            "localField": "riderId",
+            "foreignField": "_id",
+            "as": "rider"
+        }
+    }, {
+        $project: {
+            rider: 1, locations: { $slice: ["$locations", -3] }
+        }
+    }, {
+        $unwind: {
+            path: "$rider"
+        }
+    }];
 }
 
 module.exports = router;

@@ -23,13 +23,8 @@ function GetHorse(req, res) {
         }
         else {
             if (horse) {
-                horse.edit = false;
-                if (req.user.subscription == 0 && horse.userId == req.user._id && horse.default == true) {
-                    horse.edit = true;
-                }
-                if (req.user.subscription == 1 && horse.userId == req.user._id) {
-                    horse.edit = true;
-                }
+                horse.own = horse.userId.toString() == req.user._id.toString();
+                horse.edit = horse.own && (req.user.valid || horse.default);
             }
             res.send(horse);
         }
@@ -53,17 +48,8 @@ function GetHorses(req, res) {
             }
             else {
                 doc.map(horse => {
-                    horse.edit = false;
-                    horse.own = false;
-                    if (horse.userId.toString() == req.user._id.toString()) {
-                        horse.own = true;
-                        if (req.user.subscription == 1) {
-                            horse.edit = true;
-                        }
-                        else if (horse.default == true) {
-                            horse.edit = true;
-                        }
-                    }
+                    horse.own = horse.userId.toString() == req.user._id.toString();
+                    horse.edit = horse.own && (req.user.valid || horse.default);
                 });
                 res.send(doc);
             }

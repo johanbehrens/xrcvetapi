@@ -28,13 +28,15 @@ var rides = require('./routes/rides');
 var images = require('./routes/images');
 var location = require('./routes/location');
 var friends = require('./routes/friends');
+var payments = require('./routes/payments');
+var user = require('./routes/user');
+var track = require('./routes/track');
 var passport	= require('passport');
 const fileUpload = require('express-fileupload');
-const getDb = require("./db").getDb;
 var cors = require('cors')
 const app = express();
 app.use(cors());
-const port = 3000
+const port = 3000;
 
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use(bodyParser.json());
@@ -51,6 +53,9 @@ app.use('/riders', passport.authenticate('jwt', { session: false}), riders);
 app.use('/rides', passport.authenticate('jwt', { session: false}), rides);
 app.use('/location', passport.authenticate('jwt', { session: false}), location);
 app.use('/friends', passport.authenticate('jwt', { session: false}), friends);
+app.use('/payments', passport.authenticate('jwt', { session: false}), payments);
+app.use('/user', passport.authenticate('jwt', { session: false}), user);
+app.use('/track', passport.authenticate('jwt', { session: false}), track);
 app.use('/images', images);
 
 initDb(function (err) {

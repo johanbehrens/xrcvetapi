@@ -15,6 +15,13 @@ module.exports = function(passport) {
                 return done(err, false);
             }
             if (client) {
+                client.valid = false;
+                if(client.currentSubscription) {
+                    var today = new Date();
+                    //today.setHours(today.getHours() - 2);
+                    client.valid = client.currentSubscription.expires_date > today;
+                }
+
                 done(null, client);
             } else {
                 done(null, false);

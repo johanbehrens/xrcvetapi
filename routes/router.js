@@ -107,9 +107,11 @@ module.exports = (function () {
         if (req.body && !req.body.name) return res.json({ 'error': 'Name required' });
         if (req.body && !req.body.surname) return res.json({ 'error': 'Surname required' });
         if (req.body && !req.body.username) return res.json({ 'error': 'Email required' });
+        if(!validateEmail(req.body.username)) return res.json({ 'error': 'Email is invalid' });
         if (req.body && !req.body.password) return res.json({ 'error': 'Password required' });
         if (req.body && !req.body.confirmPassword) return res.json({ 'error': 'Confirm password' });
         if (req.body && !(req.body.confirmPassword === req.body.password)) return res.json({ 'error': 'Password must match' });
+
         var db = getDb();
         db.collection('users').findOne({ username: req.body.username }, function (err, user) {
             if (err) {
@@ -120,7 +122,7 @@ module.exports = (function () {
                 });
             }
             if (user) {
-                return res.json({ 'error': 'User exists' });
+                return res.json({ 'error': 'User already exists' });
             }
             else {
                 req.body.salt = 'abc';
@@ -149,6 +151,11 @@ module.exports = (function () {
             }
         });
     }
+
+    function validateEmail(email) {
+        var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
+        return re.test(email);
+      }
 
     function getFacebookUser(token, req, res) {
         fetch("https://graph.facebook.com/v2.5/me?fields=id,name,email,first_name,last_name&access_token=" + token, {
