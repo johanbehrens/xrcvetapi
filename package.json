@@ -12,6 +12,8 @@
     "express-fileupload": "^1.1.4",
     "fetch-base64": "^2.1.2",
     "firebase-admin": "^7.3.0",
+    "google-play-billing-validator": "^2.0.2",
+    "googleapis": "^39.2.0",
     "googlemaps": "^1.12.0",
     "image-to-base64": "^2.0.1",
     "jwt-simple": "^0.5.6",

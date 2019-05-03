@@ -16,8 +16,8 @@ function ValidatePayment(req, res) {
     receipt['exclude-old-transactions'] = true;
 
     let url = '';
-    //url = 'https://buy.itunes.apple.com/verifyReceipt'; //prod
-    url = 'https://sandbox.itunes.apple.com/verifyReceipt'; //test
+    url = 'https://buy.itunes.apple.com/verifyReceipt'; //prod
+    //url = 'https://sandbox.itunes.apple.com/verifyReceipt'; //test
 
     fetch(url, {
         method: "POST",
