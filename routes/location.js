@@ -8,6 +8,8 @@ var { SendEmail } = require('../helpers/email');
 const ISODate = Date;
 const image2base64 = require('image-to-base64');
 var { GetUserIds } = require('../helpers/user');
+var { enqueue } = require('../helpers/jobqueue');
+const async = require("async");
 
 router.post('/', AddLocation);
 router.get('/', GetLocations);
@@ -143,12 +145,12 @@ function createStaticImage(location) {
     }
 
     var path = location.locations.map(l => l.latitude + ',' + l.longitude).reduce((y, item) => y + '|' + item);
+    var end = location.locations[location.locations.length - 1].odometer;
     let url = `http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=300x300&path=${path}`;
     console.log(url);
     image2base64(url)
         .then(response => {
             var db = getDb();
-            var end = location.locations[location.locations.length - 1].odometer;
             db.collection('profilepicture').insertOne({ image: response }, function (err, image) {
                 imageId = image.ops[0]._id;
                 db.collection('location').updateOne(
@@ -213,7 +215,26 @@ function AddLocation(req, res) {
                     }]
                 };
                 db.collection('location').insertOne(loc, function (err, l) {
-                    res.send(l.ops[0]);
+
+                    GetUserIds(req.user._id, doGetLocations);
+                    function doGetLocations(userIds) {
+                        async.each(userIds, function (id, callback) {
+                            const notification = {
+                                userId: id,
+                                title: 'Friend Started Ride',
+                                message: `${req.user.name} started a new ride`,
+                                body: `${req.user.name}  is now your friend`,
+                                scheduledDate: new Date()
+                            };
+
+                            enqueue.sendPushNotification(notification, callback);
+                        }, function (err) {
+                            if (err) {
+                                console.log(err);
+                            }
+                            res.send(l.ops[0]);
+                        });
+                    }
                 })
             }
             else {
@@ -314,7 +335,7 @@ function raceLocationsAggregate(raceId) {
     return [{
         $match: {
             raceId: raceId,
-            end: { $exists: false}
+            end: { $exists: false }
         }
     }, {
         $lookup: {

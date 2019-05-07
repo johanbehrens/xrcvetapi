@@ -7,6 +7,12 @@
         {
             "type": "node",
             "request": "launch",
+            "name": "Worker",
+            "program": "${workspaceFolder}/worker.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
             "name": "Launch Program",
             "program": "${workspaceFolder}/index.js"
         }

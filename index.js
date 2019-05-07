@@ -58,7 +58,7 @@ app.use('/user', passport.authenticate('jwt', { session: false}), user);
 app.use('/track', passport.authenticate('jwt', { session: false}), track);
 app.use('/images', images);
 
-initDb(function (err) {
+initDb({}, function (err) {
     app.listen(port, function (err) {
         if (err) {
             throw err; //

@@ -5,7 +5,7 @@ var passport = require('passport');
 require('../config/passport')(passport);
 var ObjectID = require('mongodb').ObjectID;
 var { DoFriendInvite } = require('../helpers/user');
-var { SendNotification } = require('../helpers/notification');
+var { enqueue } = require('../helpers/jobqueue');
 
 router.post('/', InviteFriend);
 router.get('/', GetFriends);
@@ -123,10 +123,22 @@ function InviteFriend(req, res) {
                         return res.send({ message: 'Invite has already been sent' });
                     }
                     else {
-                        //SendNotification(found._id, 'Friend Request', req.user.name + ' wants to be your friend');
-                        DoFriendInvite(req.user._id, found._id, doReturn);
-                        function doReturn() {
-                            res.send({ message: 'New Invite has been sent' });
+
+                        const notification = {
+                            userId: found._id,
+                            title: 'Friend Request',
+                            message: `${req.user.name} wants to be your friend`,
+                            body: `${req.user.name}  is now your friend`,
+                            scheduledDate: new Date()
+                        };
+
+                        enqueue.sendPushNotification(notification, done);
+
+                        function done() {
+                            DoFriendInvite(req.user._id, found._id, doReturn);
+                            function doReturn() {
+                                res.send({ message: 'New Invite has been sent' });
+                            }
                         }
                     }
                 });
@@ -138,8 +150,18 @@ function InviteFriend(req, res) {
 
 function AcceptFriend(req, res) {
     if (!!req.body.accepted) {
-       // SendNotification(ObjectID(req.params.id), 'Friend Request Accepted', req.user.name + ' is now your friend');
-        acceptFriend(req.user._id, ObjectID(req.params.id), done);
+        const notification = {
+            userId: found._id,
+            title: 'Friend Request Accepted',
+            message: `${req.user.name}  is now your friend`,
+            body: `${req.user.name}  is now your friend`,
+            scheduledDate: new Date()
+        };
+
+        enqueue.sendPushNotification(notification, done);
+        function done() {
+            acceptFriend(req.user._id, ObjectID(req.params.id), done);
+        }
     }
     else deleteFriend(req.user._id, ObjectID(req.params.id), done);
 

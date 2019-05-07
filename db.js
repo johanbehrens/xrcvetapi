@@ -2,7 +2,7 @@ const client = require("mongodb").MongoClient;
 const config = require("./config/database");
 let _db;
 
-function initDb(callback) {
+function initDb(app, callback) {
     if (_db) {
         return callback(null, _db);
     }
