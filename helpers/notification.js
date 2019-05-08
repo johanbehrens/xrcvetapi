@@ -20,11 +20,11 @@ function SendNotification({userId, title, body}, callback) {
             admin.messaging().sendToDevice(user.firebaseToken, payload)
                 .then((response) => {
                     console.log('Successfully sent message:', response);
-                    return callback('Successfully');
+                    return callback();
                 })
                 .catch((error) => {
-                    if(error) return callback(error);
                     console.log('Error sending message:', error);
+                    return callback(error);
                 });
         }
         else {
