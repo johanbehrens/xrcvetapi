@@ -128,7 +128,7 @@ function InviteFriend(req, res) {
                             userId: found._id,
                             title: 'Friend Request',
                             message: `${req.user.name} wants to be your friend`,
-                            body: `${req.user.name}  is now your friend`,
+                            body: `${req.user.name} wants to be your friend`,
                             scheduledDate: new Date()
                         };
 

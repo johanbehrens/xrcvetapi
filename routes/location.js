@@ -223,7 +223,7 @@ function AddLocation(req, res) {
                                 userId: id,
                                 title: 'Friend Started Ride',
                                 message: `${req.user.name} started a new ride`,
-                                body: `${req.user.name}  is now your friend`,
+                                body: `${req.user.name} started a new ride`,
                                 scheduledDate: new Date()
                             };
 
