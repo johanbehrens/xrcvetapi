@@ -45,6 +45,7 @@ function sendPushNotification(notification, callback) {
     if (!_client) {
         _initialise();
     }
+    console.log('sending PushNotification:'+notification);
     const queue = _client.queue('default', { collection: 'jobs0' });
     queue.enqueue('sendPushNotification', notification, options, callback);
 }
