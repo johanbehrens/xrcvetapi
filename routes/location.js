@@ -11,12 +11,12 @@ var { GetUserIds } = require('../helpers/user');
 var { enqueue } = require('../helpers/jobqueue');
 const async = require("async");
 
-router.post('/', AddLocation);
-router.get('/', GetLocations);
-router.post('/update', GetLocationUpdate);
+router.post('/', passport.authenticate('jwt', { session: false}), AddLocation);
+router.get('/', passport.authenticate('jwt', { session: false}), GetLocations);
+router.post('/update', passport.authenticate('jwt', { session: false}), GetLocationUpdate);
 router.get('/liveUpdates/:raceid', GetLiveLocationsForRace);
-router.get('/:id', GetLocation);
-router.delete('/:id', DeleteLocation);
+router.get('/:id', passport.authenticate('jwt', { session: false}), GetLocation);
+router.delete('/:id', passport.authenticate('jwt', { session: false}), DeleteLocation);
 
 function GetLiveLocationsForRace(req, res) {
     var db = getDb();

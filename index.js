@@ -52,7 +52,7 @@ app.use('/events', passport.authenticate('jwt', { session: false}), events);
 app.use('/horses', passport.authenticate('jwt', { session: false}), horses);
 app.use('/riders', passport.authenticate('jwt', { session: false}), riders);
 app.use('/rides', passport.authenticate('jwt', { session: false}), rides);
-app.use('/location', passport.authenticate('jwt', { session: false}), location);
+app.use('/location', location);
 app.use('/friends', passport.authenticate('jwt', { session: false}), friends);
 app.use('/payments', passport.authenticate('jwt', { session: false}), payments);
 app.use('/user', passport.authenticate('jwt', { session: false}), user);
