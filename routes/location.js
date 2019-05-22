@@ -168,6 +168,9 @@ function createStaticImage(location) {
 }
 
 function AddLocation(req, res) {
+    console.log(req.headers);
+    console.log(req.body.location);
+
     let locationRideId = req.headers.id;
     if (!locationRideId) return res.send();;
     var db = getDb();
