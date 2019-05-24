@@ -15,8 +15,34 @@ router.post('/', passport.authenticate('jwt', { session: false}), AddLocation);
 router.get('/', passport.authenticate('jwt', { session: false}), GetLocations);
 router.post('/update', passport.authenticate('jwt', { session: false}), GetLocationUpdate);
 router.get('/liveUpdates/:raceid', GetLiveLocationsForRace);
+router.get('/liveUpdates/tracks/:id', GetLiveTracksForRace);
 router.get('/:id', passport.authenticate('jwt', { session: false}), GetLocation);
 router.delete('/:id', passport.authenticate('jwt', { session: false}), DeleteLocation);
+
+function GetLiveTracksForRace(req, res) {
+    var db = getDb();
+
+    console.log('GetLiveTracksForRace:' + req.params.id);
+    if (!req.params.id) return res.send();
+    db.collection('event').findOne({ id: req.params.id}, function (err, event) {
+        console.log('return GetLiveTracksForRace:' + req.params.id);
+        if(!event) return res.send();
+        if(!event.legs) return res.send();
+
+        let tracks =[];
+        async.each(event.legs, function (leg, callback) {
+            db.collection('track').findOne({ _id: leg.trackId }, function (err, track) {
+                tracks.push(track);
+                callback();
+            });
+        }, function (err) {
+            if (err) {
+                console.log(err);
+            }
+            res.send(tracks);
+        });
+    });
+}
 
 function GetLiveLocationsForRace(req, res) {
     var db = getDb();
