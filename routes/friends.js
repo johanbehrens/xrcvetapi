@@ -151,7 +151,7 @@ function InviteFriend(req, res) {
 function AcceptFriend(req, res) {
     if (!!req.body.accepted) {
         const notification = {
-            userId: found._id,
+            userId: ObjectID(req.params.id),
             title: 'Friend Request Accepted',
             message: `${req.user.name}  is now your friend`,
             body: `${req.user.name}  is now your friend`,
