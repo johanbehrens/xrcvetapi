@@ -23,7 +23,8 @@ function SendNotification({userId, title, body}, callback) {
                     return callback();
                 })
                 .catch((error) => {
-                    console.log('Error sending message:', error);
+                    console.log('Error sending message:');
+                    console.log(error);
                     return callback(error);
                 });
         }
