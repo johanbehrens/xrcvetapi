@@ -11,25 +11,25 @@ var { GetUserIds } = require('../helpers/user');
 var { enqueue } = require('../helpers/jobqueue');
 const async = require("async");
 
-router.post('/', passport.authenticate('jwt', { session: false}), AddLocation);
-router.get('/', passport.authenticate('jwt', { session: false}), GetLocations);
-router.post('/update', passport.authenticate('jwt', { session: false}), GetLocationUpdate);
+router.post('/', passport.authenticate('jwt', { session: false }), AddLocation);
+router.get('/', passport.authenticate('jwt', { session: false }), GetLocations);
+router.post('/update', passport.authenticate('jwt', { session: false }), GetLocationUpdate);
 router.get('/liveUpdates/:raceid', GetLiveLocationsForRace);
 router.get('/liveUpdates/tracks/:id', GetLiveTracksForRace);
-router.get('/:id', passport.authenticate('jwt', { session: false}), GetLocation);
-router.delete('/:id', passport.authenticate('jwt', { session: false}), DeleteLocation);
+router.get('/:id', passport.authenticate('jwt', { session: false }), GetLocation);
+router.delete('/:id', passport.authenticate('jwt', { session: false }), DeleteLocation);
 
 function GetLiveTracksForRace(req, res) {
     var db = getDb();
 
     console.log('GetLiveTracksForRace:' + req.params.id);
     if (!req.params.id) return res.send();
-    db.collection('event').findOne({ id: req.params.id}, function (err, event) {
+    db.collection('event').findOne({ id: req.params.id }, function (err, event) {
         console.log('return GetLiveTracksForRace:' + req.params.id);
-        if(!event) return res.send();
-        if(!event.legs) return res.send();
+        if (!event) return res.send();
+        if (!event.legs) return res.send();
 
-        let tracks =[];
+        let tracks = [];
         async.each(event.legs, function (leg, callback) {
             db.collection('track').findOne({ _id: leg.trackId }, function (err, track) {
                 tracks.push(track);
@@ -195,19 +195,28 @@ function createStaticImage(location) {
 
 function AddLocation(req, res) {
     console.log(req.headers);
-    console.log(req.body.location);
+    console.log(req.body);
 
-    let locationRideId = req.headers.id;
-    if (!locationRideId) return res.send();;
+    if (!req.body.location) return res.send({});
+
+    let extras = {};
+    if(req.body.location[8]) extras = req.body.location[8];
+
+    let locationRideId = extras.uuid ? extras.uuid : req.headers.id;
+    if (!locationRideId) return res.send();
+
     var db = getDb();
 
-    let type = req.headers.type;
-
+    let type = extras.type ? extras.type : req.headers.type;
     let username = req.headers.username;
-    let horseId = ObjectID(req.headers.horseid);
-    let riderId = ObjectID(req.headers.riderid);
-    let raceId = req.headers.raceid;
-    let riderNumber = req.headers.ridernumber;
+
+    let horseId = extras.horseId ? ObjectID(extras.horseId) : ObjectID(req.headers.horseid);
+    let riderId = extras.riderId ? ObjectID(extras.riderId) : ObjectID(req.headers.riderid);
+    let raceId = extras.raceId ? extras.raceId : req.headers.raceid;
+    delete req.body.location[8];
+
+    let riderNumber = extras.riderNumber ? extras.riderNumber : req.headers.ridernumber;
+
     if (req.body.location) req.body = req.body.location;
     let userId = req.user._id;
 
@@ -309,7 +318,7 @@ function AddLocation(req, res) {
 }
 
 function locationAggregate(Ids) {
-    return [{
+    let t= [{
         $match: {
             userId: { $in: Ids }
         }
@@ -357,7 +366,8 @@ function locationAggregate(Ids) {
         }
     }
     ];
-
+    console.log(t);
+return t;
 }
 
 function raceLocationsAggregate(raceId) {

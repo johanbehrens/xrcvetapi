@@ -21,6 +21,12 @@
             "request": "launch",
             "name": "ImportResults",
             "program": "${workspaceFolder}/test.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Reanking",
+            "program": "${workspaceFolder}/ranking.js"
         }
     ]
 }

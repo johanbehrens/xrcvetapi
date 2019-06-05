@@ -8,19 +8,40 @@ const fs = require('fs');
 const directoryPath = path.join(__dirname, 'results');
 //passsing directoryPath and callback function
 
-function makeResult(row) {
+function createCategories(r, cats) {
+    let header = Object.keys(r);
+
+    if (header.length == 1 && !cats.find(f => f.name == r[header])) {
+        cats.push({ name: r[header], points: null });
+        console.log("to add:" + r[header]);
+    }
+}
+
+function makeResult(row, isFS = false, isStar = false, isYoung = true, isWorld = false, isChild = false, type, raceId, date) {
     row.Distance = parseFloat(row.Distance);
     row.points = 0;
+    row.type = type;
+    row.raceId = raceId;
+    row.date = date;
+
     if (!row.Disq && row['C/Speed'] && row.Distance >= 80) {
-       
         row['C/Speed'] = parseFloat(row['C/Speed']);
         let point = 60;
-        if (row.Distance > 160) point = 180;
-        if (row.Distance <= 160) point = 100;
-        if (row.Distance < 140) point = 80;
-        if (row.Distance < 120) point = 70;
-        if (row.Distance < 100) point = 60;
+        if (row.Distance >= 100) point = 70;
+        if (row.Distance >= 120) point = 80;
+        if (row.Distance >= 140) point = 100;
+        if (isFS) point = 150;
 
+        if (isStar) {
+            if (row.Distance >= 120) point = 120;
+            if (!isYoung && row.Distance >= 160) point = 150;
+        }
+
+        if (isWorld) {
+            if (row.Distance >= 120) point = 150;
+            if (!isYoung && row.Distance >= 160) point = 180;
+        }
+        row.age = isChild ? 'C' : (isYoung ? 'Y' : 'S');
         row.points = (row['C/Speed'] / 22) * point;
     }
 }
@@ -38,8 +59,10 @@ function validate(row) {
         if (row[headers[i]] == 'POSITION' && headers[i] == 'Pos') continue;
         if (row[headers[i]].toLowerCase() == 'position,c,3' && headers[i].toLowerCase() == 'pos') continue;
         if (row[headers[i]].toLowerCase() == 'positon' && headers[i].toLowerCase() == 'pos') continue;
+        if (row[headers[i]].toLowerCase() == 'hc' && headers[i].toLowerCase() == 'h/cap') continue;
         if (row[headers[i]].toLowerCase() == 'handicap' && headers[i].toLowerCase() == 'h/cap') continue;
         if (row[headers[i]].toLowerCase() == 'cor_spd' && headers[i].toLowerCase() == 'c/speed') continue;
+        if (row[headers[i]].toLowerCase() == 'corr speed' && headers[i].toLowerCase() == 'c/speed') continue;
         if (row[headers[i]].toLowerCase() == 'corrected speed' && headers[i].toLowerCase() == 'c/speed') continue;
         if (row[headers[i]] == 'Correced Speed' && headers[i] == 'C/Speed') continue;
         if (row[headers[i]].toLowerCase() == 'club code' && headers[i].toLowerCase() == 'code') continue;
@@ -68,7 +91,11 @@ initDb({}, function (err) {
         }
 
         async.eachSeries(files, function (file, callback) {
-            //if (file != '06. Midvaal Final ERASA Results V1.xls') return callback();
+            if (file != 'Willowmore 24-05-2019 V1.xls') return callback();
+            let type = 'ERASA';
+            let raceId = '408';
+            let date = new Date('2019-05-24');
+
             console.log('Processing: ' + file);
             const results = excelToJson({
                 sourceFile: directoryPath + '/' + file,
@@ -130,21 +157,40 @@ initDb({}, function (err) {
             let val = validate(sheet.shift());
             if (val != '') return callback(val);
 
-            sheet = sheet.filter(r => !!r.Club)
-            sheet.map(r => makeResult(r));
+            ///sheet = sheet.filter(r => !!r.Horse)
+            sheet = sheet.filter(r => !!r.Distance)
 
-            db.collection('TestResults').insertMany(sheet, function (err, l) {
-                if (err) {
-                    return callback(err);
-                }
-                return callback();
-            })
+            let cats = [
+                { name: "80.0 km  Heavy Weight", base: 60 },
+                { name: "80.0 km  Standard Weight", base: 60 },
+                { name: "80.0 km  Light Weight", base: 60 },
+                { name: "80.0 km  Young Rider", base: 60 },
+                { name: "80.0 km  Trapleer", base: 0 },
+                { name: "40.0 km Rider", base: 0 },
+                { name: "Fail to Complete", base: 0 }];
+
+            sheet.map(r => createCategories(r, cats));
+
+            //console.log(cats);
+            sheet.map(r => makeResult(r, false, r.Category.includes('*'), r.Category.toLowerCase().includes('young'), false, r.Category.toLowerCase().includes('child'), type, raceId, date));
+
+            //return callback();
+
+            db.collection('results').deleteMany({ raceId, date }, function (err) {
+                db.collection('results').insertMany(sheet, function (err, l) {
+                    if (err) {
+                        return callback(err);
+                    }
+                    return callback();
+                })
+            });
         }, function (err) {
             if (err) {
                 console.log(err);
             }
             console.log('done');
         });
+
 
     });
 
