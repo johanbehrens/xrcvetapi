@@ -8,7 +8,7 @@ var fetch = require('node-fetch');
 router.post('/', passport.authenticate('jwt', { session: false}), AddEvent);
 router.get('/', GetEvents);
 router.get('/:id', GetEvent);
-router.get('/import', ImportEvents);
+router.get('/import', passport.authenticate('jwt', { session: false}), ImportEvents);
 
 function ImportEvents(req, res) {
     fetch('http://xrc.co.za/Objects/ride_func.php', {
