@@ -17,12 +17,10 @@ function createCategories(r, cats) {
     }
 }
 
-function makeResult(row, isFS = false, isStar = false, isYoung = true, isWorld = false, isChild = false, type, raceId, date) {
+function makeResult(row, isFS = false, isStar = false, isYoung = true, isWorld = false, isChild = false, type, raceId, date, next) {
+    var db = getDb();
     row.Distance = parseFloat(row.Distance);
     row.points = 0;
-    row.type = type;
-    row.raceId = raceId;
-    row.date = date;
 
     if (!row.Disq && row['C/Speed'] && row.Distance >= 80) {
         row['C/Speed'] = parseFloat(row['C/Speed']);
@@ -44,6 +42,20 @@ function makeResult(row, isFS = false, isStar = false, isYoung = true, isWorld =
         row.age = isChild ? 'C' : (isYoung ? 'Y' : 'S');
         row.points = (row['C/Speed'] / 22) * point;
     }
+
+    db.collection('location').updateOne(
+        { type, raceId, date, riderNumber:row.Code },
+        {
+            $set: {
+                ...row,
+                type,
+                raceId,
+                date
+            }
+        },
+        { upsert: true }, function (err, result) {
+            next();
+        });
 }
 
 function validate(row) {
@@ -172,10 +184,21 @@ initDb({}, function (err) {
             sheet.map(r => createCategories(r, cats));
 
             //console.log(cats);
-            sheet.map(r => makeResult(r, false, r.Category.includes('*'), r.Category.toLowerCase().includes('young'), false, r.Category.toLowerCase().includes('child'), type, raceId, date));
+            //sheet.map(r => );
 
             //return callback();
 
+            async.eachSeries(sheet, function (r, next) {
+                makeResult(r, false, r.Category.includes('*'), r.Category.toLowerCase().includes('young'), false, r.Category.toLowerCase().includes('child'), type, raceId, date,next);
+            }, function (err) {
+                console.log('next');
+                if (err) {
+                    return callback(err);
+                }
+                return callback();
+            });
+
+            /*
             db.collection('results').deleteMany({ raceId, date }, function (err) {
                 db.collection('results').insertMany(sheet, function (err, l) {
                     if (err) {
@@ -184,6 +207,8 @@ initDb({}, function (err) {
                     return callback();
                 })
             });
+            */
+
         }, function (err) {
             if (err) {
                 console.log(err);

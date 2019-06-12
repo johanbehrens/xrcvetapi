@@ -48,7 +48,6 @@ function AddLiveResults(req, res) {
     }
     else {
         async.eachSeries(items, function (item, callback) {
-
             db.collection('liveresults').replaceOne({ type, raceId: req.body.raceid, date, DAYNO: item.DAYNO }, item, function (err, rider) {
                 callback();
             })
@@ -75,19 +74,23 @@ function GetResults(req, res) {
     var db = getDb();
 
     console.log('GetResults');
-    db.collection('results').find({ type: req.params.type, raceId: req.params.id }).sort({ date: 1, Category: 1 }).toArray(function (err, locations) {
+    db.collection('location').find({ type: req.params.type, raceId: req.params.id },resultsProjection).sort({ date: 1, Category: 1 }).toArray(function (err, results) {
         console.log('return GetResults');
         if (err) {
-            res.status(500);
+            res.status(500);z
             res.json({
                 message: err.message,
                 error: err
             });
         }
         else {
-            res.send(locations);
+            res.send(results);
         }
     });
+}
+
+const resultsProjection = {
+    location: 0
 }
 
 module.exports = router;

@@ -116,11 +116,11 @@ function GetLocation(req, res) {
         }
         if (!location) return res.send({});
 
-        if (!location.imageId && location.userId.toString() == req.user._id.toString()) createStaticImage(location);
+        if (!location.imageId && location.userId && location.userId.toString() == req.user._id.toString()) createStaticImage(location);
 
         location.edit = false;
         location.own = false;
-        if (location.userId.toString() == req.user._id.toString()) {
+        if (location.userId && location.userId.toString() == req.user._id.toString()) {
             location.own = true;
             location.edit = true;
         }
@@ -220,7 +220,18 @@ function AddLocation(req, res) {
     if (req.body.location) req.body = req.body.location;
     let userId = req.user._id;
 
-    db.collection('location').findOne({ locationRideId: locationRideId }, function (err, location) {
+    let toMatch = {
+        locationRideId
+    }
+
+    if(raceId) {
+        toMatch = {
+            raceId,
+            riderNumber
+        }
+    }
+
+    db.collection('location').findOne(toMatch, function (err, location) {
         if (err) {
             res.status(500);
             res.json({
@@ -278,8 +289,9 @@ function AddLocation(req, res) {
             else {
                 if (!location) res.send({});
 
+                if(Number(req.body[5]) > 100 ) return res.send({ id: location._id });
                 db.collection('location').updateOne(
-                    { locationRideId: locationRideId },
+                    toMatch,
                     {
                         $push: {
                             locations: {
@@ -373,8 +385,7 @@ return t;
 function raceLocationsAggregate(raceId) {
     return [{
         $match: {
-            raceId: raceId,
-            end: { $exists: false }
+            raceId: raceId
         }
     }, {
         $lookup: {
