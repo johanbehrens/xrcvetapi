@@ -94,6 +94,7 @@ function GetLocationUpdate(req, res) {
             });
         }
         if (!location) return res.send([]);
+        if (!location.locations) return res.send([]);
 
         res.send(location.locations.filter(loc => loc.timestamp > new Date(req.body.timestamp)));
     });
