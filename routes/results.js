@@ -54,7 +54,7 @@ function AddLiveResults(req, res) {
                     $set: {
                         ...item,
                         type,
-                        raceId,
+                        raceid: req.body.raceid,
                         date
                     }
                 },
