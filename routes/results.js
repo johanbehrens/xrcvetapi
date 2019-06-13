@@ -27,7 +27,7 @@ function AddLiveResults(req, res) {
         i.diff = clientServerDiff;
     });
 
-    if (req.body.function == 'insert') {
+   /* if (req.body.function == 'insert') {
         db.collection('liveresults').deleteMany({ type, raceId: req.body.raceid, date }, function (err) {
             db.collection('liveresults').insertMany(items, function (err, doc) {
                 if (err) {
@@ -46,11 +46,21 @@ function AddLiveResults(req, res) {
             });
         });
     }
-    else {
+    else {*/
         async.eachSeries(items, function (item, callback) {
-            db.collection('liveresults').replaceOne({ type, raceId: req.body.raceid, date, DAYNO: item.DAYNO }, item, function (err, rider) {
-                callback();
-            })
+            db.collection('location').updateOne(
+                { type, raceId: req.body.raceid, date, riderNumber:item.DAYNO },
+                {
+                    $set: {
+                        ...item,
+                        type,
+                        raceId,
+                        date
+                    }
+                },
+                { upsert: true }, function (err, result) {
+                    callback();
+                });
         },function(err){
             if (err) {
                 res.status(500);
@@ -66,7 +76,7 @@ function AddLiveResults(req, res) {
                 res.send(reply);
             }
         });
-    }
+   // }
 
 }
 
