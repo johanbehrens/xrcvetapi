@@ -384,6 +384,9 @@ return t;
 }
 
 function raceLocationsAggregate(raceId) {
+ 
+
+    
     return [{
         $match: {
             raceId: raceId
