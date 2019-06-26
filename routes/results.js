@@ -84,7 +84,7 @@ function GetResults(req, res) {
     var db = getDb();
 
     console.log('GetResults');
-    db.collection('location').find({ type: req.params.type, raceId: req.params.id },resultsProjection).sort({ date: 1, Category: 1 }).toArray(function (err, results) {
+    db.collection('location').find({ type: req.params.type, raceId: req.params.id },resultsProjection).sort({ date: 1, Category: 1, Pos:1 }).toArray(function (err, results) {
         console.log('return GetResults');
         if (err) {
             res.status(500);z

@@ -29,6 +29,30 @@ function GetUserIds(userId, callback) {
         callback(ids);
     });
 }
+function GetAllFriendIds(userId, callback) {
+    var db = getDb();
+    db.collection('users').aggregate([
+        {
+            $match: {
+                _id: userId
+            }
+        },
+        {
+            $unwind: {
+                path: "$friends"
+            }
+        },
+        {
+            $project: {
+                "friends": "$friends"
+            }
+        }
+    ]).toArray(function (err, doc) {
+        let ids = doc.map(u => u.friends.userId);
+        ids.push(userId);
+        callback(ids);
+    });
+}
 
 function DoFriendInvite(userId, friendId, callback) {
     var db = getDb();
@@ -61,5 +85,6 @@ function DoFriendInvite(userId, friendId, callback) {
 
 module.exports = {
     GetUserIds,
-    DoFriendInvite
+    DoFriendInvite,
+    GetAllFriendIds
 }

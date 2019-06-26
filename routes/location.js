@@ -125,6 +125,7 @@ function GetLocation(req, res) {
             location.own = true;
             location.edit = true;
         }
+        
         res.send(location);
     });
 }
@@ -383,10 +384,7 @@ function locationAggregate(Ids) {
 return t;
 }
 
-function raceLocationsAggregate(raceId) {
- 
-
-    
+function raceLocationsAggregate(raceId) {   
     return [{
         $match: {
             raceId: raceId

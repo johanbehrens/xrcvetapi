@@ -103,10 +103,10 @@ initDb({}, function (err) {
         }
 
         async.eachSeries(files, function (file, callback) {
-            if (file != 'COLESBURG 22 3 2019 (1).xls') return callback();
+            if (file != 'George_Sat_0619.xls') return callback();
             let type = 'ERASA';
-            let raceId = '405';
-            let date = new Date('2019-03-22');
+            let raceId = '411';
+            let date = new Date('2019-06-15');
 
             console.log('Processing: ' + file);
             const results = excelToJson({
@@ -199,13 +199,8 @@ initDb({}, function (err) {
             });
 
             /*
-            db.collection('results').deleteMany({ raceId, date }, function (err) {
-                db.collection('results').insertMany(sheet, function (err, l) {
-                    if (err) {
-                        return callback(err);
-                    }
-                    return callback();
-                })
+            db.collection('location').deleteMany({ raceId, date: new Date('2019-06-') }, function (err) {
+                console.log('deleted');
             });
             */
 

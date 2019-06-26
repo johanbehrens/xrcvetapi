@@ -51,7 +51,7 @@ function GetEvent(req, res) {
 
 function GetEvents(req, res) {
     var db = getDb();
-    db.collection('event').find({}).toArray(function(err, doc){
+    db.collection('event').find({}).sort({start:-1}).toArray(function(err, doc){
         if(err) {
             res.status(500);
             res.json({

@@ -86,7 +86,7 @@ module.exports = (function () {
         var hash = crypto.createHash('sha256').update(password).digest('hex');
 
         if (hash == user.password) {
-            return sendToken(user.username, res)
+            return sendToken(user.username.toLowerCase(), res)
         }
 
         let t = { error: 'Wrong Username or Password' };
@@ -113,7 +113,7 @@ module.exports = (function () {
         if (req.body && !(req.body.confirmPassword === req.body.password)) return res.json({ 'error': 'Password must match' });
 
         var db = getDb();
-        db.collection('users').findOne({ username: req.body.username }, function (err, user) {
+        db.collection('users').findOne({ username: req.body.username.toLowerCase() }, function (err, user) {
             if (err) {
                 res.status(500);
                 res.json({
@@ -130,7 +130,7 @@ module.exports = (function () {
                 var hash = crypto.createHash('sha256').update(password).digest('hex');
 
                 delete req.body.confirmPassword;
-                req.body.emailaddress = req.body.username;
+                req.body.emailaddress = req.body.username.toLowerCase();
                 req.body.password = hash;
                 db.collection('users').insertOne(req.body, function (err, newUser) {
                     if (err) {
@@ -141,7 +141,7 @@ module.exports = (function () {
                         });
                     }
 
-                    CheckFriendRequest(req.body.emailaddress, newUser.ops[0]._id, doAuth);
+                    CheckFriendRequest(req.body.emailaddress.toLowerCase(), newUser.ops[0]._id, doAuth);
                     function doAuth() {
                         db.collection('rider').insertOne({ default: true, name: req.body.name, surname: req.body.surname, userId: newUser.ops[0]._id }, function (err, rider) {
                             return sendToken(req.body.emailaddress, res);
@@ -253,7 +253,7 @@ module.exports = (function () {
         }
         else if (req.body && req.body.username && req.body.password) {
             var db = getDb();
-            db.collection('users').findOne({ username: req.body.username }, function (err, user) {
+            db.collection('users').findOne({ username: req.body.username.toLowerCase() }, function (err, user) {
                 if (err) {
                     res.status(500);
                     res.json({
@@ -264,7 +264,7 @@ module.exports = (function () {
                 else {
                     if (!user) { //User does not exists 
                         //Does User exist on www.xrc.co.za?
-                        ImportUser(req.body.username, function (err, user) {
+                        ImportUser(req.body.username.toLowerCase(), function (err, user) {
                             if (err) {
                                 res.status(500);
                                 res.json({
@@ -282,7 +282,7 @@ module.exports = (function () {
                                             error: err
                                         });
                                     }
-                                    CheckFriendRequest(req.body.username, newUser.ops[0]._id, doAuth);
+                                    CheckFriendRequest(req.body.username.toLowerCase(), newUser.ops[0]._id, doAuth);
                                     function doAuth() {
                                         db.collection('rider').insertOne({ default: true, name: user.name, surname: user.surname, userId: newUser.ops[0]._id }, function (err, rider) {
                                             Authenticate(user, req.body.password, req, res);

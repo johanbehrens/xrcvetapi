@@ -91,7 +91,7 @@ function GetFriends(req, res) {
 function InviteFriend(req, res) {
     var db = getDb();
 
-    db.collection('users').findOne({ emailaddress: req.body.email }, function (err, found) {
+    db.collection('users').findOne({ emailaddress: req.body.email.toLowerCase() }, function (err, found) {
         if (err) {
             res.status(500);
             res.json({
@@ -105,9 +105,9 @@ function InviteFriend(req, res) {
             if (!found) {
                 let friend = {
                     userId: req.user._id,
-                    email: req.body.email
+                    email: req.body.email.toLowerCase()
                 }
-                db.collection('friends').findOne({ userId: req.user._id, email: req.body.email }, function (err, found) {
+                db.collection('friends').findOne({ userId: req.user._id, email: req.body.email.toLowerCase() }, function (err, found) {
                     if (!found) {
                         db.collection('friends').insertOne(friend, function (err, friend) {
                             //send email and invite to use app
@@ -118,7 +118,7 @@ function InviteFriend(req, res) {
                 });
             }
             else {
-                db.collection('users').findOne({ 'friends.userId': found._id }, function (err, added) {
+                db.collection('users').findOne({ _id: req.user._id, 'friends.userId': found._id }, function (err, added) {
                     if (added) {
                         return res.send({ message: 'Invite has already been sent' });
                     }
@@ -160,12 +160,12 @@ function AcceptFriend(req, res) {
 
         enqueue.sendPushNotification(notification, done);
         function done() {
-            acceptFriend(req.user._id, ObjectID(req.params.id), done);
+            acceptFriend(req.user._id, ObjectID(req.params.id), finished);
         }
     }
-    else deleteFriend(req.user._id, ObjectID(req.params.id), done);
+    else deleteFriend(req.user._id, ObjectID(req.params.id), finished);
 
-    function done() {
+    function finished() {
         res.send({ done: "done" });
     }
 }
