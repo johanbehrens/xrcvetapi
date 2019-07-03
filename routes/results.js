@@ -114,39 +114,45 @@ function transformResults(results, raceId, callback) {
         }
         else {
             if (event.isFS == 1) {
-                if (event.Day == 1) {
-                    return callback(results.map(item => {
+                return callback(results.map(item => {
+                    let toReturn = {
+                        Code: item.NO+ "-",
+                        DIST: ''+ "-",
+                        CAT: item.CAT+ "-",
+                        Ride: event.title+ "-",
+                        Pos: item.POS+ "-",
+                        Category: item.CAT+ "-",
+                        Rider: item.CALLNAME + ' ' + item.FNAME+ "-",
+                        Horse: item.HNAME+ "-",
+                        HCode: item.HCODE+ "-",
+                        CALLNAME: item.CALLNAME+ "-",
+                        FNAME: item.FNAME+ "-",
+                        HCODE: item.HCODE+ "-",
+                        HNAME: item.HNAME+ "-",
+
+                    }
+                    if (item.DISQ != '') toReturn.DISQ = item.DISQ;
+
+                    if (event.Day == 1) {
                         return {
-                            Code: item.NO,
-                            TotTime: item.D1TOTTIM,
-                            Ride: event.title,
-                            Pos: item.Pos,
-                            Category: item.CAT,
-                            "C/Speed": item.D1_SPD4,
-                            Rider: item.CALLNAME + ' ' + item.FNAME,
-                            Horse: item.HNAME,
-                            HCode: item.HCODE,
-                            Time1: item.D1RTIME1,
-                            Pulse1: item.D1_PUL1,
-                            Time2: item.D1RTIME2,
-                            Pulse2: item.D1_PUL2,
-                            Time3: item.D1RTIME3,
-                            Pulse3: item.D1_PUL3,
+                            ...toReturn,
+                            TotTime: item.D1TOTTIM + '-',
+                            TOT_TIME: item.D1TOTTIM + '-',
+                            "C/Speed": item.D1_SPD4+ "-",
+                            Time1: item.D1RTIME1+ "-",
+                            Pulse1: item.D1_PUL1+ "-",
+                            Time2: item.D1RTIME2+ "-",
+                            Pulse2: item.D1_PUL2+ "-",
+                            Time3: item.D1RTIME3+ "-",
+                            Pulse3: item.D1_PUL3+ "-"
                         }
-                    }));
-                }
-                else if (event.Day == 2) {
-                    return callback(results.map(item => {
+                    }
+                    else if (event.Day == 2) {
                         return {
-                            Code: item.NO,
-                            TotTime: item.D2TOTTIM,
-                            Ride: event.title,
-                            Pos: item.Pos,
-                            Category: item.CAT,
+                            ...toReturn,
+                            TotTime: item.D2TOTTIM + '-',
+                            TOT_TIME: item.D2TOTTIM + '-',
                             "C/Speed": item.D2_SPD4,
-                            Rider: item.CALLNAME + ' ' + item.FNAME,
-                            Horse: item.HNAME,
-                            HCode: item.HCODE,
                             Time1: item.D2RTIME1,
                             Pulse1: item.D2_PUL1,
                             Time2: item.D2RTIME2,
@@ -154,20 +160,13 @@ function transformResults(results, raceId, callback) {
                             Time3: item.D2RTIME3,
                             Pulse3: item.D2_PUL3,
                         }
-                    }));
-                }
-                else if (event.Day == 3) {
-                    return callback(results.map(item => {
+                    }
+                    else if (event.Day == 3) {
                         return {
-                            Code: item.NO,
-                            TotTime: item.D3TOTTIM,
-                            Ride: event.title,
-                            Pos: item.Pos,
-                            Category: item.CAT,
+                            ...toReturn,
+                            TotTime: item.D3TOTTIM + '-',
+                            TOT_TIME: item.D3TOTTIM + '-',
                             "C/Speed": item.D3_SPD4,
-                            Rider: item.CALLNAME + ' ' + item.FNAME,
-                            Horse: item.HNAME,
-                            HCode: item.HCODE,
                             Time1: item.D3RTIME1,
                             Pulse1: item.D3_PUL1,
                             Time2: item.D3RTIME2,
@@ -175,8 +174,8 @@ function transformResults(results, raceId, callback) {
                             Time3: item.D3RTIME3,
                             Pulse3: item.D3_PUL3,
                         }
-                    }));
-                }
+                    }
+                }).sort((a, b) => a.Pos - b.Pos));
             }
             else {
                 return callback(results);
