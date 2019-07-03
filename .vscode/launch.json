@@ -27,6 +27,12 @@
             "request": "launch",
             "name": "Reanking",
             "program": "${workspaceFolder}/ranking.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Import FS",
+            "program": "${workspaceFolder}/importResults.js"
         }
     ]
 }
