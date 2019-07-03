@@ -94,26 +94,28 @@ function GetResults(req, res) {
             });
         }
         else {
-            let trans = transformResults(results, req.params.id);
-            res.send(trans);
+            transformResults(results, req.params.id, done);
+            function done(trans) {
+                res.send(trans);
+            }
         }
     });
 }
 
-function transformResults(results, raceId) {
+function transformResults(results, raceId, callback) {
     var db = getDb();
 
     db.collection('event').findOne({ id: raceId }, function (err, event) {
         if (err) {
-            return {
+            return callback({
                 message: err.message,
                 error: err
-            };
+            });
         }
         else {
             if (event.isFS == 1) {
                 if (event.Day == 1) {
-                    return results.map(item => {
+                    return callback(results.map(item => {
                         return {
                             Code: item.NO,
                             TotTime: item.D1TOTTIM,
@@ -131,10 +133,10 @@ function transformResults(results, raceId) {
                             Time3: item.D1RTIME3,
                             Pulse3: item.D1_PUL3,
                         }
-                    });
+                    }));
                 }
                 else if (event.Day == 2) {
-                    return results.map(item => {
+                    return callback(results.map(item => {
                         return {
                             Code: item.NO,
                             TotTime: item.D2TOTTIM,
@@ -152,10 +154,10 @@ function transformResults(results, raceId) {
                             Time3: item.D2RTIME3,
                             Pulse3: item.D2_PUL3,
                         }
-                    });
+                    }));
                 }
                 else if (event.Day == 3) {
-                    return results.map(item => {
+                    return callback(results.map(item => {
                         return {
                             Code: item.NO,
                             TotTime: item.D3TOTTIM,
@@ -173,11 +175,11 @@ function transformResults(results, raceId) {
                             Time3: item.D3RTIME3,
                             Pulse3: item.D3_PUL3,
                         }
-                    });
+                    }));
                 }
             }
             else {
-                return results;
+                return callback(results);
             }
         }
     });
