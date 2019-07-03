@@ -103,7 +103,7 @@ function GetResults(req, res) {
 function transformResults(results, raceId) {
     var db = getDb();
 
-    db.collection('event').findOne({ raceId }, function (err, event) {
+    db.collection('event').findOne({ id: raceId }, function (err, event) {
         if (err) {
             return {
                 message: err.message,
