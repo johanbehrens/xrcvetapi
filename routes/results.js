@@ -94,7 +94,12 @@ function GetResults(req, res) {
             });
         }
         else {
-            transformResults(results, req.params.id, done);
+            if (req.params.type == 'DRASA') {
+                return res.send(results);
+            }
+            else {
+                transformResults(results, req.params.id, done);
+            }
             function done(trans) {
                 res.send(trans);
             }
@@ -116,19 +121,19 @@ function transformResults(results, raceId, callback) {
             if (event.isFS == 1) {
                 return callback(results.map(item => {
                     let toReturn = {
-                        Code: item.NO+ "-",
-                        DIST: ''+ "-",
-                        CAT: item.CAT+ "-",
-                        Ride: event.title+ "-",
-                        Pos: item.POS+ "-",
-                        Category: item.CAT+ "-",
-                        Rider: item.CALLNAME + ' ' + item.FNAME+ "-",
-                        Horse: item.HNAME+ "-",
-                        HCode: item.HCODE+ "-",
-                        CALLNAME: item.CALLNAME+ "-",
-                        FNAME: item.FNAME+ "-",
-                        HCODE: item.HCODE+ "-",
-                        HNAME: item.HNAME+ "-",
+                        Code: item.NO + "-",
+                        DIST: '' + "-",
+                        CAT: item.CAT + "-",
+                        Ride: event.title + "-",
+                        Pos: item.POS + "-",
+                        Category: item.CAT + "-",
+                        Rider: item.CALLNAME + ' ' + item.FNAME + "-",
+                        Horse: item.HNAME + "-",
+                        HCode: item.HCODE + "-",
+                        CALLNAME: item.CALLNAME + "-",
+                        FNAME: item.FNAME + "-",
+                        HCODE: item.HCODE + "-",
+                        HNAME: item.HNAME + "-",
 
                     }
                     if (item.DISQ != '') toReturn.DISQ = item.DISQ;
@@ -138,13 +143,13 @@ function transformResults(results, raceId, callback) {
                             ...toReturn,
                             TotTime: item.D1TOTTIM + '-',
                             TOT_TIME: item.D1TOTTIM + '-',
-                            "C/Speed": item.D1_SPD4+ "-",
-                            Time1: item.D1RTIME1+ "-",
-                            Pulse1: item.D1_PUL1+ "-",
-                            Time2: item.D1RTIME2+ "-",
-                            Pulse2: item.D1_PUL2+ "-",
-                            Time3: item.D1RTIME3+ "-",
-                            Pulse3: item.D1_PUL3+ "-"
+                            "C/Speed": item.D1_SPD4 + "-",
+                            Time1: item.D1RTIME1 + "-",
+                            Pulse1: item.D1_PUL1 + "-",
+                            Time2: item.D1RTIME2 + "-",
+                            Pulse2: item.D1_PUL2 + "-",
+                            Time3: item.D1RTIME3 + "-",
+                            Pulse3: item.D1_PUL3 + "-"
                         }
                     }
                     else if (event.Day == 2) {
