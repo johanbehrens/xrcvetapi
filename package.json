@@ -9,7 +9,9 @@
     "body-parser": "^1.18.3",
     "convert-excel-to-json": "^1.6.1",
     "cors": "^2.8.5",
+    "cote": "^0.20.0",
     "dbffile": "^1.2.0",
+    "email-templates": "^6.0.0",
     "esm": "^3.2.25",
     "express": "^4.16.4",
     "express-fileupload": "^1.1.4",
@@ -19,14 +21,20 @@
     "googleapis": "^39.2.0",
     "googlemaps": "^1.12.0",
     "image-to-base64": "^2.0.1",
+    "ip": "^1.1.5",
     "json2csv": "^4.5.1",
     "jwt-simple": "^0.5.6",
+    "local-devices": "^2.0.0",
+    "macaddress": "^0.2.9",
     "mongodb": "^3.2.3",
     "monq": "^0.3.7",
     "node-dbf": "^0.4.0",
     "node-fetch": "^2.3.0",
     "nodemailer": "^6.1.1",
+    "nodemailer-plugin-inline-base64": "^2.1.1",
     "passport": "^0.4.0",
-    "passport-jwt": "^4.0.0"
+    "passport-jwt": "^4.0.0",
+    "smb2": "^0.2.11",
+    "xlsx": "^0.14.3"
   }
 }

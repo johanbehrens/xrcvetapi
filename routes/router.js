@@ -4,6 +4,7 @@ var fetch = require('node-fetch');
 var crypto = require('crypto');
 var ObjectID = require('mongodb').ObjectID;
 var { DoFriendInvite } = require('../helpers/user');
+var { TemplateEmail } = require('../helpers/email');
 
 module.exports = (function () {
     'use strict';
@@ -107,7 +108,7 @@ module.exports = (function () {
         if (req.body && !req.body.name) return res.json({ 'error': 'Name required' });
         if (req.body && !req.body.surname) return res.json({ 'error': 'Surname required' });
         if (req.body && !req.body.username) return res.json({ 'error': 'Email required' });
-        if(!validateEmail(req.body.username)) return res.json({ 'error': 'Email is invalid' });
+        if (!validateEmail(req.body.username)) return res.json({ 'error': 'Email is invalid' });
         if (req.body && !req.body.password) return res.json({ 'error': 'Password required' });
         if (req.body && !req.body.confirmPassword) return res.json({ 'error': 'Confirm password' });
         if (req.body && !(req.body.confirmPassword === req.body.password)) return res.json({ 'error': 'Password must match' });
@@ -144,6 +145,10 @@ module.exports = (function () {
                     CheckFriendRequest(req.body.emailaddress.toLowerCase(), newUser.ops[0]._id, doAuth);
                     function doAuth() {
                         db.collection('rider').insertOne({ default: true, name: req.body.name, surname: req.body.surname, userId: newUser.ops[0]._id }, function (err, rider) {
+
+                            TemplateEmail(req.body.emailaddress, 'register');
+                            TemplateEmail('behrens.johan@gmail.com', 'register');
+
                             return sendToken(req.body.emailaddress, res);
                         });
                     }
@@ -155,7 +160,7 @@ module.exports = (function () {
     function validateEmail(email) {
         var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(email);
-      }
+    }
 
     function getFacebookUser(token, req, res) {
         fetch("https://graph.facebook.com/v2.5/me?fields=id,name,email,first_name,last_name&access_token=" + token, {
@@ -306,7 +311,7 @@ module.exports = (function () {
         var db = getDb();
         db.collection('friends').findOne({ email }, function (err, found) {
             if (found) {
-                DoFriendInvite(found.userId,userId, removeFromFriends);
+                DoFriendInvite(found.userId, userId, removeFromFriends);
             }
             else callback();
 

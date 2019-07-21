@@ -7,7 +7,9 @@ const async = require('async');
 require('../config/passport')(passport);
 
 router.get('/:type/:id', GetResults);
+router.post('/:type/search', SearchResults);
 router.post('/:type/:id', AddLiveResults);
+router.post('/status', GetLocalServerStatus);
 
 function AddLiveResults(req, res) {
     var db = getDb();
@@ -19,7 +21,7 @@ function AddLiveResults(req, res) {
     let type = req.params.type;
 
     console.log('AddLiveResults');
-    let items = JSON.parse(req.body.items);
+    let items = req.body.items;//JSON.parse(req.body.items);
     items.map(i => {
         i.raceId = req.body.raceid;
         i.type = type;
@@ -27,26 +29,6 @@ function AddLiveResults(req, res) {
         i.diff = clientServerDiff;
     });
 
-    /* if (req.body.function == 'insert') {
-         db.collection('liveresults').deleteMany({ type, raceId: req.body.raceid, date }, function (err) {
-             db.collection('liveresults').insertMany(items, function (err, doc) {
-                 if (err) {
-                     res.status(500);
-                     res.json({
-                         message: err.message,
-                         error: err
-                     });
-                 }
-                 else {
-                     let reply = {
-                         insert: 'success'
-                     };
-                     res.send(reply);
-                 }
-             });
-         });
-     }
-     else {*/
     async.eachSeries(items, function (item, callback) {
         db.collection('location').updateOne(
             { type, raceId: req.body.raceid, date, riderNumber: item.DAYNO },
@@ -76,8 +58,52 @@ function AddLiveResults(req, res) {
             res.send(reply);
         }
     });
-    // }
+}
 
+function GetLocalServerStatus(req, res) {
+    var db = getDb();
+    let toUpdate = {
+        ip: req.body.ip,
+        heartbeat: new Date()
+    };
+    if(req.body.status) {
+        toUpdate.status= req.body.status;
+    }
+    if(req.body.error) {
+        toUpdate.error= req.body.error;
+    }
+    if(req.body.files) {
+        toUpdate.files= req.body.files;
+    }
+    if(req.body.username) {
+        toUpdate.username= req.body.username;
+    }
+    if(req.body.file) {
+        toUpdate.file= req.body.file;
+    }
+    if(req.body.password) {
+        toUpdate.password= req.body.password;
+    }
+    if(!req.body.timer) {
+        toUpdate.timer= 10000;
+    }
+    if(!req.body.export) {
+        toUpdate.export= false;
+    }
+    if(!req.body.type) {
+        toUpdate.type= 'ERASA';
+    }
+
+    db.collection('localServers').updateOne(
+        { mac: req.body.mac },
+        {
+            $set: toUpdate
+        },
+        { upsert: true }, function (err, result) {
+            db.collection('localServers').findOne({ mac: req.body.mac }, function (err, server) {
+                res.send(server);
+            });
+        });
 }
 
 function GetResults(req, res) {
@@ -100,8 +126,15 @@ function GetResults(req, res) {
             else {
                 transformResults(results, req.params.id, done);
             }
-            function done(trans) {
-                res.send(trans);
+            function done(err, trans) {
+                if (err) {
+                    res.status(500);
+                    res.json({
+                        message: err.message,
+                        error: err
+                    });
+                }
+                else res.send(trans);
             }
         }
     });
@@ -117,9 +150,15 @@ function transformResults(results, raceId, callback) {
                 error: err
             });
         }
+        else if (!event) {
+            return callback({
+                message: 'No event found',
+                error: 'No event found'
+            });
+        }
         else {
             if (event.isFS == 1) {
-                return callback(results.map(item => {
+                return callback(null, results.map(item => {
                     let toReturn = {
                         Code: item.NO + "-",
                         DIST: '' + "-",
@@ -183,10 +222,28 @@ function transformResults(results, raceId, callback) {
                 }).sort((a, b) => a.Pos - b.Pos));
             }
             else {
-                return callback(results);
+                return callback(null, results);
             }
         }
     });
+}
+
+function SearchResults(req, res) {
+    var db = getDb();
+
+    let keys = Object.keys(req.body);
+    let match = {
+        type: req.params.type
+    };
+    keys.forEach(key => {
+        match[key] = { $regex: req.body[key], $options: 'i' }
+    });
+    console.log(match);
+    db.collection('location').find(match, resultsProjection)
+        .sort({ date: 1, Category: 1, Pos: 1 })
+        .toArray(function (err, results) {
+            res.send(results);
+        });
 }
 
 const resultsProjection = {

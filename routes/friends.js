@@ -6,6 +6,7 @@ require('../config/passport')(passport);
 var ObjectID = require('mongodb').ObjectID;
 var { DoFriendInvite } = require('../helpers/user');
 var { enqueue } = require('../helpers/jobqueue');
+var { TemplateEmail } = require('../helpers/email');
 
 router.post('/', InviteFriend);
 router.get('/', GetFriends);
@@ -110,7 +111,7 @@ function InviteFriend(req, res) {
                 db.collection('friends').findOne({ userId: req.user._id, email: req.body.email.toLowerCase() }, function (err, found) {
                     if (!found) {
                         db.collection('friends').insertOne(friend, function (err, friend) {
-                            //send email and invite to use app
+                            TemplateEmail(req.body.email.toLowerCase(), 'friendrequest', {name: req.user.name + ' ' + req.user.surname});
                             return res.send({ message: 'New Invite has been sent' });
                         })
                     }
