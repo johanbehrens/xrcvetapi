@@ -66,32 +66,32 @@ function GetLocalServerStatus(req, res) {
         ip: req.body.ip,
         heartbeat: new Date()
     };
-    if(req.body.status) {
-        toUpdate.status= req.body.status;
+    if (req.body.status) {
+        toUpdate.status = req.body.status;
     }
-    if(req.body.error) {
-        toUpdate.error= req.body.error;
+    if (req.body.error) {
+        toUpdate.error = req.body.error;
     }
-    if(req.body.files) {
-        toUpdate.files= req.body.files;
+    if (req.body.files) {
+        toUpdate.files = req.body.files;
     }
-    if(req.body.username) {
-        toUpdate.username= req.body.username;
+    if (req.body.username) {
+        toUpdate.username = req.body.username;
     }
-    if(req.body.file) {
-        toUpdate.file= req.body.file;
+    if (req.body.file) {
+        toUpdate.file = req.body.file;
     }
-    if(req.body.password) {
-        toUpdate.password= req.body.password;
+    if (req.body.password) {
+        toUpdate.password = req.body.password;
     }
-    if(!req.body.timer) {
-        toUpdate.timer= 10000;
+    if (!req.body.timer) {
+        toUpdate.timer = 10000;
     }
-    if(!req.body.export) {
-        toUpdate.export= false;
+    if (!req.body.export) {
+        toUpdate.export = false;
     }
-    if(!req.body.type) {
-        toUpdate.type= 'ERASA';
+    if (!req.body.type) {
+        toUpdate.type = 'ERASA';
     }
 
     db.collection('localServers').updateOne(
@@ -121,7 +121,7 @@ function GetResults(req, res) {
         }
         else {
             if (req.params.type == 'DRASA') {
-                return res.send(results);
+                return res.send(drasaResults(results));
             }
             else {
                 transformResults(results, req.params.id, done);
@@ -137,6 +137,40 @@ function GetResults(req, res) {
                 else res.send(trans);
             }
         }
+    });
+}
+
+function drasaResults(results, raceId, callback) {
+    return results.map(item => {
+
+        let toReturn = {
+            Code: item.riderNumber,
+            DIST: item.Distance,
+            CAT: item.Division,
+            Ride: item.Ride,
+            Pos: item.Position,
+            Category: item.Division,
+            Rider: item.Rider,
+            Horse: item.Horse,
+            HCode: item["Passport No"],
+            CALLNAME: " ",
+            FNAME: " ",
+            HCODE: " ",
+            HNAME: " ",
+            TotTime: " ",
+            TOT_TIME: " ",
+            "C/Speed": parseInt(item["Actual Speed"]),
+            Time1: " ",
+            Pulse1: " ",
+            Time2: " ",
+            Pulse2: " ",
+            Time3: " ",
+            Pulse3: " "
+            
+        }
+        if (item.DISQ != '') toReturn.DISQ = item.DISQ;
+
+        return toReturn;
     });
 }
 

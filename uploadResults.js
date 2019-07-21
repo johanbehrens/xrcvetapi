@@ -103,10 +103,10 @@ initDb({}, function (err) {
         }
 
         async.eachSeries(files, function (file, callback) {
-            if (file != 'George_Sat_0619.xls') return callback();
+            if (file != 'SOEBATTERSVLAKTE 23 MARCH 2019 (1).xls') return callback();
             let type = 'ERASA';
-            let raceId = '411';
-            let date = new Date('2019-06-15');
+            let raceId = '406';
+            let date = new Date('2019-03-23');
 
             console.log('Processing: ' + file);
             const results = excelToJson({
