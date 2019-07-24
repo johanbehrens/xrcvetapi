@@ -32,6 +32,7 @@ var payments = require('./routes/payments');
 var user = require('./routes/user');
 var track = require('./routes/track');
 var results = require('./routes/results');
+var entries = require('./routes/entries');
 var passport	= require('passport');
 const fileUpload = require('express-fileupload');
 var cors = require('cors')
@@ -58,6 +59,7 @@ app.use('/payments', passport.authenticate('jwt', { session: false}), payments);
 app.use('/user', passport.authenticate('jwt', { session: false}), user);
 app.use('/track', passport.authenticate('jwt', { session: false}), track);
 app.use('/results', results);
+app.use('/entries', entries);
 app.use('/images', images);
 
 initDb({}, function (err) {
