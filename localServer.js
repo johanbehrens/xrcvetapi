@@ -13,6 +13,7 @@ let state = {
     ip: ipadd,
     timer: 10000,
 };
+let serverIp = 'http://localhost:3000';
 
 function connected(err, client) {
     if (err) {
@@ -31,7 +32,7 @@ function getMacAddress() {
 }
 
 function DoStatusUpdate() {
-    fetch("http://localhost:3000/results/status", {
+    fetch(serverIp+"/results/status", {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -84,7 +85,7 @@ function clearEntries() {
     console.log('clearEntries')
     db.collection('results').deleteMany({ raceId: state.raceId }, function (err) {
         console.log('deleted');
-        fetch(`http://localhost:3000/results/${state.type}/${state.raceId}`, {
+        fetch(`${serverIp}/results/${state.type}/${state.raceId}`, {
             method: "GET"
         })
             .then(function (response) {
@@ -163,7 +164,7 @@ function updateResults() {
                 raceid: state.raceId
             }
 
-            fetch("http://localhost:3000/results/" + state.type + "/" + state.raceId, {
+            fetch(serverIp+"/results/" + state.type + "/" + state.raceId, {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
