@@ -17,7 +17,7 @@ let serverIp = 'http://localhost:3000';
 
 function connected(err, client) {
     if (err) {
-        return callback(err);
+        throw err;
     }
     db = client.db('xrcvet');
     getMacAddress();
