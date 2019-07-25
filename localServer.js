@@ -32,7 +32,7 @@ function getMacAddress() {
 }
 
 function DoStatusUpdate() {
-    fetch(serverIp+"/results/status", {
+    fetch(serverIp + "/results/status", {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -159,12 +159,12 @@ function updateResults() {
 
             var workbook = XLSX.read(file, { type: 'buffer' });
             var body = {
-                items: XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]),
+                items: filter(XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]])),
                 stamp: new Date(),
                 raceid: state.raceId
             }
 
-            fetch(serverIp+"/results/" + state.type + "/" + state.raceId, {
+            fetch(serverIp + "/results/" + state.type + "/" + state.raceId, {
                 headers: {
                     'Accept': 'application/json',
                     'Content-Type': 'application/json'
@@ -182,6 +182,45 @@ function updateResults() {
     }
 
     console.log('updateResults')
+}
+
+function filter(items) {
+    let newItems = [];
+
+    items.forEach(item => {
+        let mapper = [
+            "TOT_TIME"
+            , "TIME1"
+            , "SLIP1"
+            , "PULSE1"
+            , "ARRIVAL1"
+            , "TIME2"
+            , "ARRIVAL2"
+            , "SLIP2"
+            , "PULSE2"
+            , "TIME3"
+            , "ARRIVAL3"
+            , "SLIP3"
+            , "PULSE3"
+            , "TIME4"
+            , "ARRIVAL4"
+            , "SLIP4"
+            , "PULSE4"
+            , "DIST"
+            , "Ride"
+            , "AVE_SPD"
+            , "CALLNAME"
+            , "FNAME"
+            , "DAYNO"
+            , "HNAME"
+            , "HCODE"]
+        let returnObj = {};
+        mapper.forEach(key => {
+            returnObj[key] = item[key];
+        });
+        newItems.push(returnObj);
+    });
+    return newItems;
 }
 
 function pushStartTimes() {
