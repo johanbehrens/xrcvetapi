@@ -220,6 +220,7 @@ function filter(items) {
         mapper.forEach(key => {
             returnObj[key] = item[key];
         });
+        if(!returnObj["HCODE"]) returnObj["HCODE"] = 'n/a';
         newItems.push(returnObj);
     });
     return newItems;
