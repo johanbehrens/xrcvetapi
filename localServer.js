@@ -176,8 +176,8 @@ function updateResults() {
                     return response.json();
                 })
                 .then(function (res) {
+                    setTimeout(DoStatusUpdate, state.timer, 'funky');
                 })
-
         });
     }
 
@@ -212,6 +212,8 @@ function filter(items) {
             , "CALLNAME"
             , "FNAME"
             , "DAYNO"
+            , "CAT"
+            ,"TOTSLIP"
             , "HNAME"
             , "HCODE"]
         let returnObj = {};
