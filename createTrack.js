@@ -17,7 +17,7 @@ initDb({}, function (err) {
     }
     var db = getDb();
 
-    db.collection('location').findOne({ _id: ObjectID("5d1ae33db62faf1420badfa2") }, function (err, location) {
+    db.collection('location').findOne({ _id: ObjectID("5d3ad88cb4166f47990872bb") }, function (err, location) {
         let track = {
             userId: location.userId,
             name: location.username,
@@ -33,7 +33,7 @@ initDb({}, function (err) {
                 console.log(err);
             }
             db.collection('location').updateOne(
-                { _id: ObjectID("5d1ae33db62faf1420badfa2") },
+                { _id: ObjectID("5d3ad88cb4166f47990872bb") },
                 {
                     $set: {
                         trackId: trackIn.ops[0]._id
