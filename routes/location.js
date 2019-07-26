@@ -125,7 +125,7 @@ function GetLocation(req, res) {
             location.own = true;
             location.edit = true;
         }
-        
+
         res.send(location);
     });
 }
@@ -202,7 +202,7 @@ function AddLocation(req, res) {
     if (!req.body.location) return res.send({});
 
     let extras = {};
-    if(req.body.location[8]) extras = req.body.location[8];
+    if (req.body.location[8]) extras = req.body.location[8];
 
     let locationRideId = extras.uuid ? extras.uuid : req.headers.id;
     if (!locationRideId) return res.send();
@@ -226,7 +226,7 @@ function AddLocation(req, res) {
         locationRideId
     }
 
-    if(raceId) {
+    if (raceId) {
         toMatch = {
             raceId,
             riderNumber
@@ -291,7 +291,7 @@ function AddLocation(req, res) {
             else {
                 if (!location) res.send({});
 
-                if(Number(req.body[5]) > 100 ) return res.send({ id: location._id });
+                if (Number(req.body[5]) > 100) return res.send({ id: location._id });
                 db.collection('location').updateOne(
                     toMatch,
                     {
@@ -332,7 +332,7 @@ function AddLocation(req, res) {
 }
 
 function locationAggregate(Ids) {
-    let t= [{
+    let t = [{
         $match: {
             userId: { $in: Ids }
         }
@@ -381,10 +381,10 @@ function locationAggregate(Ids) {
     }
     ];
     console.log(t);
-return t;
+    return t;
 }
 
-function raceLocationsAggregate(raceId) {   
+function raceLocationsAggregate(raceId) {
     return [{
         $match: {
             raceId: raceId
@@ -398,7 +398,33 @@ function raceLocationsAggregate(raceId) {
         }
     }, {
         $project: {
-            rider: 1, locations: { $slice: ["$locations", -3] }
+            rider: 1, 
+            locations: { $slice: ["$locations", -3] },
+            TOT_TIME: 1,
+            TIME1: 1,
+            SLIP1: 1,
+            PULSE1: 1,
+            ARRIVAL1: 1,
+            TIME2: 1,
+            ARRIVAL2: 1,
+            SLIP2: 1,
+            PULSE2: 1,
+            TIME3: 1,
+            ARRIVAL3: 1,
+            SLIP3: 1,
+            PULSE3: 1,
+            TIME4: 1,
+            ARRIVAL4: 1,
+            SLIP4: 1,
+            PULSE4: 1,
+            DIST: 1,
+            Ride: 1,
+            AVE_SPD: 1,
+            CALLNAME: 1,
+            FNAME: 1,
+            DAYNO: 1,
+            HNAME: 1,
+            HCODE: 1,
         }
     }, {
         $unwind: {
