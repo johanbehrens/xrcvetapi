@@ -221,6 +221,8 @@ function filter(items) {
             returnObj[key] = item[key];
         });
         if(!returnObj["HCODE"]) returnObj["HCODE"] = 'n/a';
+        if(!returnObj["TOT_TIME"] || returnObj["TOT_TIME"] == '') returnObj["TOT_TIME"] = '00:00:00';
+        if(!returnObj["TOTSLIP"] || returnObj["TOTSLIP"] == '') returnObj["TOTSLIP"] = '00:00:00';
         newItems.push(returnObj);
     });
     return newItems;
