@@ -43,19 +43,36 @@ function makeResult(row, isFS = false, isStar = false, isYoung = true, isWorld =
         row.points = (row['C/Speed'] / 22) * point;
     }
 
-    db.collection('location').updateOne(
-        { type, raceId, date, riderNumber:row.Code },
-        {
-            $set: {
-                ...row,
-                type,
-                raceId,
-                date
-            }
-        },
-        { upsert: true }, function (err, result) {
-            next();
-        });
+    if (row.Code != 'Day Rider') {
+        db.collection('location').updateOne(
+            { type, raceId, date, MCODE: row.Code },
+            {
+                $set: {
+                    ...row,
+                    type,
+                    raceId,
+                    date
+                }
+            },
+            { upsert: true }, function (err, result) {
+                next();
+            });
+    }
+    else {
+        db.collection('location').updateOne(
+            { type, raceId, date, HNAME: row.Horse },
+            {
+                $set: {
+                    ...row,
+                    type,
+                    raceId,
+                    date
+                }
+            },
+            { upsert: true }, function (err, result) {
+                next();
+            });
+    }
 }
 
 function validate(row) {
@@ -103,10 +120,10 @@ initDb({}, function (err) {
         }
 
         async.eachSeries(files, function (file, callback) {
-            if (file != 'SOEBATTERSVLAKTE 23 MARCH 2019 (1).xls') return callback();
+            if (file != 'R_Soebaters_0719_EF.xls') return callback();
             let type = 'ERASA';
-            let raceId = '406';
-            let date = new Date('2019-03-23');
+            let raceId = '413';
+            let date = new Date('2019-07-27');
 
             console.log('Processing: ' + file);
             const results = excelToJson({
@@ -189,7 +206,7 @@ initDb({}, function (err) {
             //return callback();
 
             async.eachSeries(sheet, function (r, next) {
-                makeResult(r, false, r.Category.includes('*'), r.Category.toLowerCase().includes('young'), false, r.Category.toLowerCase().includes('child'), type, raceId, date,next);
+                makeResult(r, false, r.Category.includes('*'), r.Category.toLowerCase().includes('young'), false, r.Category.toLowerCase().includes('child'), type, raceId, date, next);
             }, function (err) {
                 console.log('next');
                 if (err) {

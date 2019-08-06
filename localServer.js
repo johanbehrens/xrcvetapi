@@ -6,6 +6,7 @@ client.connect('mongodb://localhost:27017', connected);
 var SMB2 = require('smb2');
 var Parser = require('node-dbf');
 var XLSX = require('xlsx')
+const fs = require('fs');
 
 let db;
 let ipadd = ip.address();
@@ -13,7 +14,8 @@ let state = {
     ip: ipadd,
     timer: 10000,
 };
-let serverIp = 'http://209.97.178.43:3000';
+//let serverIp = 'http://209.97.178.43:3000';
+let serverIp = 'http://localhost:3000';
 
 function connected(err, client) {
     if (err) {
@@ -148,40 +150,56 @@ function updateResults() {
         });
     }
     else {
-        smb2Client.readFile(state.file, function (err, file) {
-            if (err) {
-                console.error(err);
-                state.error = err;
-                setTimeout(DoStatusUpdate, state.timer, 'funky');
-                return;
-            }
-            else state.error = 'na';
-
-            var workbook = XLSX.read(file, { type: 'buffer' });
-            var body = {
-                items: filter(XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]])),
-                stamp: new Date(),
-                raceid: state.raceId
-            }
-
-            fetch(serverIp + "/results/" + state.type + "/" + state.raceId, {
-                headers: {
-                    'Accept': 'application/json',
-                    'Content-Type': 'application/json'
-                },
-                method: "POST",
-                body: JSON.stringify(body)
-            })
-                .then(function (response) {
-                    return response.json();
-                })
-                .then(function (res) {
+        if (state.isLocal) {
+            fs.readFile(state.file, function read(err, data) {
+                if (err) {
+                    console.error(err);
+                    state.error = err;
                     setTimeout(DoStatusUpdate, state.timer, 'funky');
-                })
-        });
+                    return;
+                }
+                gotFile(data);
+            });
+
+        }
+        else
+            smb2Client.readFile(state.file, function (err, file) {
+                if (err) {
+                    console.error(err);
+                    state.error = err;
+                    setTimeout(DoStatusUpdate, state.timer, 'funky');
+                    return;
+                }
+                else state.error = 'na';
+                gotFile(file);
+            });
     }
 
     console.log('updateResults')
+}
+
+function gotFile(file) {
+    var workbook = XLSX.read(file, { type: 'buffer' });
+    var body = {
+        items: filter(XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]])),
+        stamp: new Date(),
+        raceid: state.raceId
+    }
+
+    fetch(serverIp + "/results/" + state.type + "/" + state.raceId, {
+        headers: {
+            'Accept': 'application/json',
+            'Content-Type': 'application/json'
+        },
+        method: "POST",
+        body: JSON.stringify(body)
+    })
+        .then(function (response) {
+            return response.json();
+        })
+        .then(function (res) {
+            setTimeout(DoStatusUpdate, state.timer, 'funky');
+        })
 }
 
 function filter(items) {
@@ -190,30 +208,52 @@ function filter(items) {
     items.forEach(item => {
         let mapper = [
             "TOT_TIME"
+            , "R_TIME1"
+            , "R_TIME2"
+            , "R_TIME3"
+            , "R_TIME4"
+            , "R_TIME5"
+            , "R_TIME6"
+
             , "TIME1"
-            , "SLIP1"
-            , "PULSE1"
-            , "ARRIVAL1"
             , "TIME2"
-            , "ARRIVAL2"
-            , "SLIP2"
-            , "PULSE2"
             , "TIME3"
-            , "ARRIVAL3"
-            , "SLIP3"
-            , "PULSE3"
             , "TIME4"
-            , "ARRIVAL4"
+            , "TIME5"
+            , "TIME6"
+            , "TIME7"
+            , "TIME8"
+            , "TIME9"
+            , "TIME10"
+            , "TIME11"
+            , "TIME12"
+
+            , "SLIP1"
+            , "SLIP2"
+            , "SLIP3"
             , "SLIP4"
+            , "SLIP5"
+            , "SLIP6"
+
+            , "PULSE1"
+            , "PULSE2"
+            , "PULSE3"
             , "PULSE4"
+            , "PULSE5"
+            , "PULSE6"
+
+            , "DISQ"
+            , "REASON"
+            
             , "DIST"
             , "Ride"
             , "AVE_SPD"
             , "CALLNAME"
             , "FNAME"
             , "DAYNO"
+            , "MCODE"
             , "CAT"
-            ,"TOTSLIP"
+            , "TOTSLIP"
             , "HNAME"
             , "HCODE"]
         let returnObj = {};
@@ -221,9 +261,9 @@ function filter(items) {
             returnObj[key] = item[key];
         });
         console.log(returnObj);
-        if(!returnObj["HCODE"]) returnObj["HCODE"] = 'n/a';
-        if(!returnObj["TOT_TIME"] || returnObj["TOT_TIME"] == '') returnObj["TOT_TIME"] = '00:00:00';
-        if(!returnObj["TOTSLIP"] || returnObj["TOTSLIP"] == '') returnObj["TOTSLIP"] = '00:00:00';
+        if (!returnObj["HCODE"]) returnObj["HCODE"] = 'n/a';
+        if (!returnObj["TOT_TIME"] || returnObj["TOT_TIME"] == '') returnObj["TOT_TIME"] = '00:00:00';
+        if (!returnObj["TOTSLIP"] || returnObj["TOTSLIP"] == '') returnObj["TOTSLIP"] = '00:00:00';
         newItems.push(returnObj);
     });
     return newItems;

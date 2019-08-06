@@ -196,8 +196,7 @@ function createStaticImage(location) {
 }
 
 function AddLocation(req, res) {
-    console.log(req.headers);
-    console.log(req.body);
+    console.log(req.headers.username + " location update");
 
     if (!req.body.location) return res.send({});
 
@@ -295,6 +294,13 @@ function AddLocation(req, res) {
                 db.collection('location').updateOne(
                     toMatch,
                     {
+                        $set: {
+                            locationRideId,
+                            userId,
+                            username,
+                            horseId,
+                            riderId,
+                        },
                         $push: {
                             locations: {
                                 latitude: req.body[0],
@@ -398,7 +404,7 @@ function raceLocationsAggregate(raceId) {
         }
     }, {
         $project: {
-            rider: 1, 
+            rider: 1,
             locations: { $slice: ["$locations", -3] },
             TOT_TIME: 1,
             TIME1: 1,
