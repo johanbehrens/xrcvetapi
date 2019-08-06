@@ -14,8 +14,8 @@ let state = {
     ip: ipadd,
     timer: 10000,
 };
-//let serverIp = 'http://209.97.178.43:3000';
-let serverIp = 'http://localhost:3000';
+let serverIp = 'http://209.97.178.43:3000';
+//let serverIp = 'http://localhost:3000';
 
 function connected(err, client) {
     if (err) {
