@@ -8,6 +8,7 @@
   "dependencies": {
     "async": "^2.6.2",
     "body-parser": "^1.18.3",
+    "chokidar": "^3.0.2",
     "convert-excel-to-json": "^1.6.1",
     "cors": "^2.8.5",
     "cote": "^0.20.0",

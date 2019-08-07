@@ -21,7 +21,7 @@ function AddLiveResults(req, res) {
     let type = req.params.type;
 
     console.log('AddLiveResults');
-    let items = req.body.items;//JSON.parse(req.body.items);
+    let items = JSON.parse(req.body.items);
     items.map(i => {
         i.raceId = req.body.raceid;
         i.type = type;
