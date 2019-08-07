@@ -23,6 +23,11 @@ function AddLiveResults(req, res) {
     console.log('AddLiveResults');
     let items = JSON.parse(req.body.items);
     items.map(i => {
+        if(i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
+        if(i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
+        if (!i["HCODE"]) i["HCODE"] = 'n/a';
+        if (!i["TOT_TIME"] || i["TOT_TIME"] == '') i["TOT_TIME"] = '00:00:00';
+        if (!i["TOTSLIP"] || i["TOTSLIP"] == '') i["TOTSLIP"] = '00:00:00';
         i.raceId = req.body.raceid;
         i.type = type;
         i.date = date;
