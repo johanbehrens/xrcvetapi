@@ -170,7 +170,9 @@ function drasaResults(results, raceId, callback) {
             Time2: " ",
             Pulse2: " ",
             Time3: " ",
-            Pulse3: " "
+            Pulse3: " ",
+            Club: item.Club,
+            Points: item["ACTUAL POINTS"]
             
         }
         if (item.DISQ != '') toReturn.DISQ = item.DISQ;
