@@ -39,7 +39,7 @@ const fileUpload = require('express-fileupload');
 var cors = require('cors')
 const app = express();
 app.use(cors());
-const port = 8080;
+const port = 443;
 
 app.use(bodyParser.json({limit: '50mb'}));
 app.use(bodyParser.urlencoded({limit: '50mb', extended: true}));

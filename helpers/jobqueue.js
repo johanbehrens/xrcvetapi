@@ -8,7 +8,8 @@ let nextWorkerId = 0;
 module.exports = {
     initialise,
     enqueue: {
-        sendPushNotification
+        sendPushNotification,
+        sendEmail
     },
     getDefaultQueue,
     createWorker,
@@ -48,6 +49,23 @@ function sendPushNotification(notification, callback) {
     console.log('sending PushNotification:'+notification);
     const queue = _client.queue('default', { collection: 'jobs0' });
     queue.enqueue('sendPushNotification', notification, options, callback);
+}
+
+function sendEmail(email, callback) {
+    const options = {
+        attempts: {
+            count: 1
+        },
+        priority: 100,
+        delay: email.scheduledDate
+    };
+    
+    if (!_client) {
+        _initialise();
+    }
+    console.log('sending Email:'+email);
+    const queue = _client.queue('default', { collection: 'jobs0' });
+    queue.enqueue('sendEmail', email, options, callback);
 }
 
 function enqueueJob({ jobName, data, priority }, callback) {

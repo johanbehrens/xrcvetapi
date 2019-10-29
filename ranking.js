@@ -22,6 +22,7 @@ initDb({}, function (err) {
             console.log(err);
             return;
         }
+        //console.log(results);
         results.map(r => {
 
             //120

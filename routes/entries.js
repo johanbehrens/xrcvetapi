@@ -10,7 +10,7 @@ router.get('/:raceid', GetEntries);
 function GetEntries(req, res) {
     var db = getDb();
 
-    db.collection('entries').find({ }).toArray(function (err, entries) {
+    db.collection('entries').find({Distance:'160'}).toArray(function (err, entries) {
         if (err) {
             res.status(500);
             res.json({

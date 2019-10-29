@@ -4,7 +4,8 @@ const config = require("../config/database");
 const jobQueue = require('./jobqueue');
 
 const jobFunctions = {
-    sendPushNotification: require('./notification').SendNotification
+    sendPushNotification: require('./notification').SendNotification,
+    sendEmail: require('./email').SendNotification
 };
 
 const _logInfoForJob = (workerId, action, job) => {

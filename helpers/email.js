@@ -57,7 +57,12 @@ function SendEmail(to, subject, html, callback) {
     });
 }
 
+function SendNotification({to, subject, html}, callback) {
+    SendEmail(to, subject, html, callback);
+}
+
 module.exports = {
     SendEmail,
+    SendNotification,
     TemplateEmail
 }

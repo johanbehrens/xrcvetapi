@@ -32,6 +32,8 @@ function GetUser(req, res) {
 }
 
 function GetAllUsers(req, res) {
+    console.log('GetAllUsers');
+    console.log(req.query);
     if (!req.query.skip) req.query.skip = 0;
     if (!req.query.limit) req.query.limit = 0;
     var db = getDb();
@@ -119,6 +121,7 @@ function getAggregate(userIds, filter, skip, limit) {
             $limit: limit
         }
     ];
+    console.log(t);
     return t;
 }
 
