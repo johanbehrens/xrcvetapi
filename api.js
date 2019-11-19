@@ -34,6 +34,7 @@ var track = require('./routes/track');
 var results = require('./routes/results');
 var entries = require('./routes/entries');
 var love = require('./addons/love');
+var elmicom = require('./addons/elmicom');
 var passport	= require('passport');
 const fileUpload = require('express-fileupload');
 var cors = require('cors')
@@ -52,6 +53,7 @@ var routes = require('./routes/router');
 app.use('/', routes);
 app.use('/events', events);
 app.use('/love', love);
+app.use('/elmicom', elmicom);
 app.use('/horses', passport.authenticate('jwt', { session: false}), horses);
 app.use('/riders', passport.authenticate('jwt', { session: false}), riders);
 app.use('/rides', passport.authenticate('jwt', { session: false}), rides);
