@@ -29,7 +29,7 @@ function AddMeter(req, response) {
         { meterId: req.params.meterId },
         {
             $set: {
-                ...req.params.body,
+                ...req.body,
                 date: new Date()
             }
         },
