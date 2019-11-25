@@ -18,7 +18,7 @@ function ViewMeter(req, res) {
         }
         else {
             function GetCard(doc){
-                return doc.success =='up'? 'success' : 'danger'
+                return doc.status =='up'? 'success' : 'danger'
             }
 
             var html = `<!DOCTYPE html>
