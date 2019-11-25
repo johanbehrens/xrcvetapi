@@ -33,7 +33,11 @@ function ViewMeter(req, res) {
               <script src="https://maxcdn.bootstrapcdn.com/bootstrap/4.3.1/js/bootstrap.min.js"></script>
             </head>
             <body>
-            
+            <script>
+            setTimeout(function(){
+                window.location.reload(1);
+             }, 600000);
+             </script>
             <div class="jumbotron text-center">
               <h1>Elmicom</h1>
               <p>Monitoring</p> 
