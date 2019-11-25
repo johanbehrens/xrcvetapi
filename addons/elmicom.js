@@ -17,7 +17,7 @@ function ViewMeter(req, res) {
             });
         }
         else {
-            res.send(doc);
+            res.send('<html>test</html>');
         }
     });
 }
