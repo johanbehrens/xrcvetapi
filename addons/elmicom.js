@@ -8,7 +8,7 @@ router.post('/:meterId', AddMeter);
 function ViewMeter(req, res) {
     var db = getDb();
 
-    db.collection('elmicom').find({}).sort({ meterId: -1 }).toArray(function (err, doc) {
+    db.collection('elmicom').find({}).sort({ status: -1 }).toArray(function (err, docs) {
         if (err) {
             res.status(500);
             res.json({
@@ -17,7 +17,8 @@ function ViewMeter(req, res) {
             });
         }
         else {
-            res.send(`<!DOCTYPE html>
+
+            var html = `<!DOCTYPE html>
             <html lang="en">
             <head>
               <title>Bootstrap Example</title>
@@ -31,35 +32,31 @@ function ViewMeter(req, res) {
             <body>
             
             <div class="jumbotron text-center">
-              <h1>My First Bootstrap Page</h1>
-              <p>Resize this responsive page to see the effect!</p> 
-            </div>a
-              
-            <div class="container">
-              <div class="row">
-                <div class="col-sm-4">
-                  <h3>Column 1</h3>
-                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit...</p>
-                  <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...</p>
-                </div>
-                <div class="col-sm-4">
-                  <h3>Column 2</h3>
-                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit...</p>
-                  <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...</p>
-                </div>
-                <div class="col-sm-4">
-                  <h3>Column 3</h3>        
-                  <p>Lorem ipsum dolor sit amet, consectetur adipisicing elit...</p>
-                  <p>Ut enim ad minim veniam, quis nostrud exercitation ullamco laboris...</p>
-                </div>
-              </div>
+              <h1>Elmicom</h1>
+              <p>Monitoring</p> 
             </div>
-            
-            </body>
-            </html>
-            `);
+              
+            <div class="container"><div class="row">`;
+            docs.forEach(doc => {
+                html += `<div class="col-sm-4">
+                            <div class="card text-white bg-${getCard(doc)} mb-3" style="max-width: 18rem;">
+                            <div class="card-header">Header</div>
+                            <div class="card-body">
+                                <h5 class="card-title">Up</h5>
+                                <p class="card-text">Heartbeat: 2019-11-11</p>
+                            </div>
+                            </div>
+                        </div>`;
+            });
+
+            html += '</div></div></body></html>';
+            res.send(html);
         }
     });
+}
+
+function GetCard(doc){
+    return doc.success =='up'? 'success' : 'danger'
 }
 
 function AddMeter(req, response) {
