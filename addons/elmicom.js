@@ -17,6 +17,9 @@ function ViewMeter(req, res) {
             });
         }
         else {
+            function GetCard(doc){
+                return doc.success =='up'? 'success' : 'danger'
+            }
 
             var html = `<!DOCTYPE html>
             <html lang="en">
@@ -39,7 +42,7 @@ function ViewMeter(req, res) {
             <div class="container"><div class="row">`;
             docs.forEach(doc => {
                 html += `<div class="col-sm-4">
-                            <div class="card text-white bg-${getCard(doc)} mb-3" style="max-width: 18rem;">
+                            <div class="card text-white bg-${GetCard(doc)} mb-3" style="max-width: 18rem;">
                             <div class="card-header">Header</div>
                             <div class="card-body">
                                 <h5 class="card-title">Up</h5>
@@ -55,9 +58,7 @@ function ViewMeter(req, res) {
     });
 }
 
-function GetCard(doc){
-    return doc.success =='up'? 'success' : 'danger'
-}
+
 
 function AddMeter(req, response) {
     var db = getDb();
