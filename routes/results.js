@@ -126,14 +126,7 @@ function GetResults(req, res) {
             });
         }
         else {
-            results = results.map(i => {
-                return {
-                    ...i,
-                    Pos: parseInt(i.Pos) == 0 ? 'E' : parseInt(i.Pos)
-                }
-            }).sort(function(a, b) {
-                return a["date"] - b["date"] || a["Category"] - b["Category"] || a["Division"] - b["Division"]|| a["Pos"] - b["Pos"];
-            });
+            
 
             if (req.params.type == 'DRASA') {
                 return res.send(drasaResults(results));
