@@ -116,6 +116,7 @@ function GetResults(req, res) {
 
     console.log('GetResults');
     db.collection('location').find({ type: req.params.type, raceId: req.params.id }).project(resultsProjection).sort({ date: 1, Category: 1, Division: 1, Pos: 1 }).toArray(function (err, results) {
+        
         console.log('return GetResults');
         if (err) {
             res.status(500);
@@ -125,6 +126,15 @@ function GetResults(req, res) {
             });
         }
         else {
+            results = results.map(i => {
+                return {
+                    ...i,
+                    Pos: parseInt(i.Pos) == 0 ? 'E' : parseInt(i.Pos)
+                }
+            }).sort(function(a, b) {
+                return a["date"] - b["date"] || a["Category"] - b["Category"] || a["Division"] - b["Division"]|| a["Pos"] - b["Pos"];
+            });
+
             if (req.params.type == 'DRASA') {
                 return res.send(drasaResults(results));
             }
