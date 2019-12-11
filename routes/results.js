@@ -288,7 +288,7 @@ function SearchResults(req, res) {
 }
 
 const resultsProjection = {
-    location: 0
+    locations: 0
 }
 
 module.exports = router;
