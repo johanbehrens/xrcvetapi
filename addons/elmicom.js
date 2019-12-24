@@ -95,7 +95,7 @@ function AddMeter(req, response) {
         console.log('down');
         var notification = {
             userId: new ObjectID('5cb967737ff245517c5a7165'),
-            title: rereq.params.meterId,
+            title: req.params.meterId,
             message: `Status Down`,
             body: `Status Down`,
             scheduledDate: new Date()
@@ -104,7 +104,7 @@ function AddMeter(req, response) {
         enqueue.sendPushNotification(notification, update);
          notification = {
             userId: new ObjectID('5cbb0ed05d1ddc6311e0c588'),
-            title: rereq.params.meterId,
+            title: req.params.meterId,
             message: `Status Down`,
             body: `Status Down`,
             scheduledDate: new Date()
