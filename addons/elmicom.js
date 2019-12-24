@@ -69,7 +69,9 @@ function ViewMeter(req, res) {
 function AddMeter(req, response) {
     var db = getDb();
 
+    console.log(req.body);
     if(req.body && req.body.status == 'up') {
+        console.log('up');
         const notification = {
             userId: new ObjectID('5cb967737ff245517c5a7165'),
             title: 'Status Up',
@@ -81,6 +83,7 @@ function AddMeter(req, response) {
         enqueue.sendPushNotification(notification, callback);
     }
     if(req.body && req.body.status == 'down') {
+        console.log('down');
         const notification = {
             userId: new ObjectID('5cb967737ff245517c5a7165'),
             title: 'Status Down',
