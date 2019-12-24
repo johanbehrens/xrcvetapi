@@ -80,7 +80,7 @@ function AddMeter(req, response) {
             scheduledDate: new Date()
         };
 
-        enqueue.sendPushNotification(notification, callback);
+        enqueue.sendPushNotification(notification, update);
     }
     if(req.body && req.body.status == 'down') {
         console.log('down');
@@ -92,9 +92,12 @@ function AddMeter(req, response) {
             scheduledDate: new Date()
         };
 
-        enqueue.sendPushNotification(notification, callback);
+        enqueue.sendPushNotification(notification, update);
     }
 
+    function update() {
+
+    }
     db.collection('elmicom').updateOne(
         { meterId: req.params.meterId },
         {
