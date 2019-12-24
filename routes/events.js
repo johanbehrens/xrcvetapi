@@ -6,6 +6,8 @@ require('../config/passport')(passport);
 var fetch = require('node-fetch');
 
 router.post('/', passport.authenticate('jwt', { session: false }), AddEvent);
+router.post('/:id/', passport.authenticate('jwt', { session: false }), AddEventItem);
+
 router.get('/', GetEvents);
 router.get('/:id', GetEvent);
 router.get('/import', passport.authenticate('jwt', { session: false }), ImportEvents);
@@ -72,7 +74,12 @@ function GetEvents(req, res) {
 
 function AddEvent(req, res) {
     var db = getDb();
-    db.collection('event').insertOne(req.body, function (err, doc) {
+    var event ={
+        ...req.body,
+        start: req.body.date,
+        end: req.body.date
+    }
+    db.collection('event').insertOne(event, function (err, doc) {
         if (err) {
             res.status(500);
             res.json({
@@ -83,5 +90,21 @@ function AddEvent(req, res) {
         else res.send(doc);
     });
 }
+
+function AddEventItem(req, res) {
+    var db = getDb();
+    db.collection('eventItem').insertOne(req.body, function (err, doc) {
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else res.send(doc);
+    });
+}
+
+
 
 module.exports = router;

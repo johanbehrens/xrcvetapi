@@ -66,6 +66,7 @@ module.exports = (function () {
                     return callback(user.error);
                 }
                 else {
+                    user.rank = getRank(user.usertypeid);
                     return callback(null, user);
                 }
             }).catch(function (err) {
@@ -87,21 +88,43 @@ module.exports = (function () {
         var hash = crypto.createHash('sha256').update(password).digest('hex');
 
         if (hash == user.password) {
-            return sendToken(user.username.toLowerCase(), res)
+            var toSend = {
+                username: user.username.toLowerCase(),
+                valid: true,
+				userid: user.id,
+				clubcode: user.clubcode,
+				usertypeid: user.usertypeid,
+				owner: user.owner,
+				isLinked: user.isLinked,
+				rank: user.rank,
+				erasa_code: user.erasa_code
+            }
+            return sendToken(toSend, res, req.body.isWeb)
         }
 
         let t = { error: 'Wrong Username or Password' };
         return res.send(t);
     }
 
-    function sendToken(username, res) {
-        var token = jwt.encode({ "id": username }, config.secret);
+    function sendToken(user, res, isWeb) {
+        var token = jwt.encode({ "id": user.username }, config.secret);
         var response = {
             token: 'JWT ' + token,
-            username
+            ...user,
+            rank: getRank(user.usertypeid),
         };
 
-        return res.send(response);
+        var set = { lastLogin: new Date() };
+        if(isWeb) set ={ lastWebLogin: new Date() };
+
+        var db = getDb();
+        db.collection('users').updateOne({ username: user.username }, { $set: set }, function (err, user) {
+            if (err) {
+                console.log(err);
+                return res.send(response);
+            }
+            else return res.send(response);
+        });
     }
 
     function Register(req, res) {
@@ -133,7 +156,21 @@ module.exports = (function () {
                 delete req.body.confirmPassword;
                 req.body.emailaddress = req.body.username.toLowerCase();
                 req.body.password = hash;
-                db.collection('users').insertOne(req.body, function (err, newUser) {
+                req.body.clubcode = req.body.club;
+                req.body.erasa_code = req.body.code;
+
+                delete req.body.club;
+                delete req.body.code;
+
+                let user = {
+                    ...req.body,
+                    isActive: '0',
+                    isApproved: '1',
+                    rank: getRank('2'),
+                    usertypeid: '2'
+                };
+
+                db.collection('users').insertOne(user, function (err, newUser) {
                     if (err) {
                         res.status(500);
                         return res.json({
@@ -149,12 +186,33 @@ module.exports = (function () {
                             TemplateEmail(req.body.emailaddress, 'register');
                             TemplateEmail('behrens.johan@gmail.com', 'register');
 
-                            return sendToken(req.body.emailaddress, res);
+                            return sendToken(user, res, user.isWeb);
                         });
                     }
                 });
             }
         });
+    }
+
+    function getRank(usertypeid) {
+        switch (usertypeid) {
+            case "1":
+                return 50
+            case "2":
+                return 8
+            case "3":
+                return 10
+            case "5":
+                return 0
+            case "6":
+                return 8
+            case "7":
+                return 40
+            case "8":
+                return 9
+            default:
+                return 0;
+        }
     }
 
     function validateEmail(email) {
@@ -190,7 +248,7 @@ module.exports = (function () {
                         });
                     }
                     if (user) {
-                        return sendToken(user.username, res);
+                        return sendToken(user, res);
                     }
                     else { //get user from xrc
                         ImportUser(femail, function (err, user) {
@@ -207,7 +265,7 @@ module.exports = (function () {
                                     CheckFriendRequest(req.body.username, newUser.ops[0]._id, doAuth);
                                     function doAuth() {
                                         db.collection('rider').insertOne({ default: true, name: user.name, surname: user.surname, userId: newUser.ops[0]._id }, function (err, rider) {
-                                            return sendToken(req.body.username, res);
+                                            return sendToken(user, res);
                                         });
                                     }
                                 });
@@ -235,7 +293,7 @@ module.exports = (function () {
                                     CheckFriendRequest(user.emailaddress, newUser.ops[0]._id, doAuth);
                                     function doAuth() {
                                         db.collection('rider').insertOne({ default: true, name: user.name, surname: user.surname, userId: newUser.ops[0]._id }, function (err, rider) {
-                                            return sendToken(user.emailaddress, res);
+                                            return sendToken(user, res);
                                         });
                                     }
                                 });
@@ -256,7 +314,17 @@ module.exports = (function () {
         if (req.body && req.body.ftoken) {
             getFacebookUser(req.body.ftoken, req, res);
         }
+        else if(req.body && !req.body.username){
+            return res.json({ 'error': 'Please enter a username' });
+        }
+        else if(req.body && !req.body.password){
+            return res.json({ 'error': 'Please enter a password' });
+        }
+        else if(!validateEmail(req.body.username) ){
+            return res.json({ 'error': 'You have entered an invalid email address' });
+        }
         else if (req.body && req.body.username && req.body.password) {
+            
             var db = getDb();
             db.collection('users').findOne({ username: req.body.username.toLowerCase() }, function (err, user) {
                 if (err) {

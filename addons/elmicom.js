@@ -1,6 +1,8 @@
 var express = require('express');
 var router = express.Router();
 const getDb = require("../db").getDb;
+var { enqueue } = require('../helpers/jobqueue');
+var ObjectID = require('mongodb').ObjectID;
 
 router.get('/view', ViewMeter);
 router.post('/:meterId', AddMeter);
@@ -66,6 +68,29 @@ function ViewMeter(req, res) {
 
 function AddMeter(req, response) {
     var db = getDb();
+
+    if(req.body && req.body.status == 'up') {
+        const notification = {
+            userId: new ObjectID('5cb967737ff245517c5a7165'),
+            title: 'Status Up',
+            message: `status Up`,
+            body: `status Up`,
+            scheduledDate: new Date()
+        };
+
+        enqueue.sendPushNotification(notification, callback);
+    }
+    if(req.body && req.body.status == 'down') {
+        const notification = {
+            userId: new ObjectID('5cb967737ff245517c5a7165'),
+            title: 'Status Down',
+            message: `status Down`,
+            body: `status Down`,
+            scheduledDate: new Date()
+        };
+
+        enqueue.sendPushNotification(notification, callback);
+    }
 
     db.collection('elmicom').updateOne(
         { meterId: req.params.meterId },
