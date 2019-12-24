@@ -74,9 +74,18 @@ function AddMeter(req, response) {
         console.log('up');
         const notification = {
             userId: new ObjectID('5cb967737ff245517c5a7165'),
-            title: 'Status Up',
-            message: `status Up`,
-            body: `status Up`,
+            title: req.params.meterId,
+            message: `Status Up`,
+            body: `Status Up`,
+            scheduledDate: new Date()
+        };
+
+        enqueue.sendPushNotification(notification, update);
+        const notification = {
+            userId: new ObjectID('5cbb0ed05d1ddc6311e0c588'),
+            title: req.params.meterId,
+            message: `Status Up`,
+            body: `Status Up`,
             scheduledDate: new Date()
         };
 
@@ -86,9 +95,18 @@ function AddMeter(req, response) {
         console.log('down');
         const notification = {
             userId: new ObjectID('5cb967737ff245517c5a7165'),
-            title: 'Status Down',
-            message: `status Down`,
-            body: `status Down`,
+            title: rereq.params.meterId,
+            message: `Status Down`,
+            body: `Status Down`,
+            scheduledDate: new Date()
+        };
+
+        enqueue.sendPushNotification(notification, update);
+        const notification = {
+            userId: new ObjectID('5cbb0ed05d1ddc6311e0c588'),
+            title: rereq.params.meterId,
+            message: `Status Down`,
+            body: `Status Down`,
             scheduledDate: new Date()
         };
 
