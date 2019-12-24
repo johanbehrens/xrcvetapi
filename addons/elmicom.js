@@ -81,7 +81,7 @@ function AddMeter(req, response) {
         };
 
         enqueue.sendPushNotification(notification, update);
-        const notification = {
+         notification = {
             userId: new ObjectID('5cbb0ed05d1ddc6311e0c588'),
             title: req.params.meterId,
             message: `Status Up`,
@@ -102,7 +102,7 @@ function AddMeter(req, response) {
         };
 
         enqueue.sendPushNotification(notification, update);
-        const notification = {
+         notification = {
             userId: new ObjectID('5cbb0ed05d1ddc6311e0c588'),
             title: rereq.params.meterId,
             message: `Status Down`,
