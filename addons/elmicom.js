@@ -72,7 +72,7 @@ function AddMeter(req, response) {
     console.log(req.body);
     if(req.body && req.body.status == 'up') {
         console.log('up');
-        const notification = {
+        var notification = {
             userId: new ObjectID('5cb967737ff245517c5a7165'),
             title: req.params.meterId,
             message: `Status Up`,
@@ -93,7 +93,7 @@ function AddMeter(req, response) {
     }
     if(req.body && req.body.status == 'down') {
         console.log('down');
-        const notification = {
+        var notification = {
             userId: new ObjectID('5cb967737ff245517c5a7165'),
             title: rereq.params.meterId,
             message: `Status Down`,
