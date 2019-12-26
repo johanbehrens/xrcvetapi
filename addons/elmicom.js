@@ -20,7 +20,15 @@ function ViewMeter(req, res) {
         }
         else {
             function GetCard(doc){
-                return doc.status =='up'? 'success' : 'danger'
+                var st = 'danger';
+                if(doc.status && doc. eth && doc.status == 'up' && doc.eth == 'up') {
+                    st = 'success';
+                }
+                if(doc.status && !doc. eth && doc.status == 'up') {
+                    st = 'success';
+                }
+
+                return st;
             }
 
             var html = `<!DOCTYPE html>
@@ -52,6 +60,7 @@ function ViewMeter(req, res) {
                             <div class="card-header">${doc.meterId}</div>
                             <div class="card-body">
                                 <h5 class="card-title">Status: ${doc.status}</h5>
+                                <h5 class="card-title">Ethernet: ${doc.eth}</h5>
                                 <p class="card-text">Heartbeat: ${doc.date}</p>
                             </div>
                             </div>
