@@ -25,7 +25,7 @@ function ViewMeter(req, res) {
                     st = 'success';
                 }
                 if(doc.status && !doc. eth && doc.status == 'up') {
-                    st = 'success';
+                    st = 'warning';
                 }
 
                 return st;
