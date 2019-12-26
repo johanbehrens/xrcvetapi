@@ -79,52 +79,29 @@ function AddMeter(req, response) {
     var db = getDb();
 
     console.log(req.body);
-    if(req.body && req.body.status == 'up') {
-        console.log('up');
-        var notification = {
-            userId: new ObjectID('5cb967737ff245517c5a7165'),
-            title: req.params.meterId,
-            message: `Status Up`,
-            body: `Status Up`,
-            scheduledDate: new Date()
-        };
+    if(req.body && (req.body.eth == 'down' || req.body.eth == 'up')) {
+        sendPush(new ObjectID('5cb967737ff245517c5a7165'),req.params.meterId, 'Ethernet', req.body.status);
+        sendPush(new ObjectID('5cbb0ed05d1ddc6311e0c588'),req.params.meterId, 'Ethernet', req.body.status);
+    }
+    if(req.body && (req.body.status == 'down' || req.body.status == 'up')) {
+        sendPush(new ObjectID('5cb967737ff245517c5a7165'),req.params.meterId, 'Status', req.body.status);
+        sendPush(new ObjectID('5cbb0ed05d1ddc6311e0c588'),req.params.meterId, 'Status', req.body.status);
+    }
 
-        enqueue.sendPushNotification(notification, update);
+    function sendPush(id, meterId, type, status) {
          notification = {
-            userId: new ObjectID('5cbb0ed05d1ddc6311e0c588'),
-            title: req.params.meterId,
-            message: `Status Up`,
-            body: `Status Up`,
+            userId: id,
+            title: meterId,
+            message: `${type} ${status}`,
+            body: `${type} ${status}`,
             scheduledDate: new Date()
         };
 
         enqueue.sendPushNotification(notification, update);
     }
-    if(req.body && req.body.status == 'down') {
-        console.log('down');
-        var notification = {
-            userId: new ObjectID('5cb967737ff245517c5a7165'),
-            title: req.params.meterId,
-            message: `Status Down`,
-            body: `Status Down`,
-            scheduledDate: new Date()
-        };
+    function update() {}
 
-        enqueue.sendPushNotification(notification, update);
-         notification = {
-            userId: new ObjectID('5cbb0ed05d1ddc6311e0c588'),
-            title: req.params.meterId,
-            message: `Status Down`,
-            body: `Status Down`,
-            scheduledDate: new Date()
-        };
-
-        enqueue.sendPushNotification(notification, update);
-    }
-
-    function update() {
-
-    }
+    
     db.collection('elmicom').updateOne(
         { meterId: req.params.meterId },
         {
