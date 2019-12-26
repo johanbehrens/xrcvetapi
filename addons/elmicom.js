@@ -80,8 +80,8 @@ function AddMeter(req, response) {
 
     console.log(req.body);
     if(req.body && (req.body.eth == 'down' || req.body.eth == 'up')) {
-        sendPush(new ObjectID('5cb967737ff245517c5a7165'),req.params.meterId, 'Ethernet', req.body.status);
-        sendPush(new ObjectID('5cbb0ed05d1ddc6311e0c588'),req.params.meterId, 'Ethernet', req.body.status);
+        sendPush(new ObjectID('5cb967737ff245517c5a7165'),req.params.meterId, 'Ethernet', req.body.eth);
+        sendPush(new ObjectID('5cbb0ed05d1ddc6311e0c588'),req.params.meterId, 'Ethernet', req.body.eth);
     }
     if(req.body && (req.body.status == 'down' || req.body.status == 'up')) {
         sendPush(new ObjectID('5cb967737ff245517c5a7165'),req.params.meterId, 'Status', req.body.status);
