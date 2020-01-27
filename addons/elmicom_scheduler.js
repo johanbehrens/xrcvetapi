@@ -31,6 +31,19 @@ schedule.scheduleJob("* */30 * * * *", function () {
                 ping.sys.probe(host.IPWAN, function (isAlive) {
                     if (isAlive) {
                         console.log('host ' + host.meterId + ' is alive');
+                        db.collection('elmicom').updateOne(
+                            { meterId: host.meterId },
+                            {
+                                $set: {
+                                    ...host,
+                                    date: new Date()
+                                }
+                            },
+                            { upsert: true }, function (err, result) {
+                                if (err) {
+                                    console.log(err);
+                                }
+                            });
                     }
                     else {
                         console.log('host ' + host.meterId + ' is dead');
