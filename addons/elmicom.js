@@ -74,8 +74,6 @@ function ViewMeter(req, res) {
     });
 }
 
-
-
 function AddMeter(req, response) {
     var db = getDb();
 
@@ -119,6 +117,5 @@ function AddMeter(req, response) {
             response.send({ "message": "saved" });
         });
 }
-
 
 module.exports = router;
