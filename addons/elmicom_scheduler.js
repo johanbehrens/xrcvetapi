@@ -43,6 +43,7 @@ schedule.scheduleJob("* */30 * * * *", function () {
         });
     });
 });
+console.log('Elmicom Scheduler started');
 
 function sendPush(id, meterId, type, status) {
     notification = {
