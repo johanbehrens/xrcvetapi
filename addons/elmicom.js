@@ -61,6 +61,7 @@ function ViewMeter(req, res) {
                             <div class="card-body">
                                 <h5 class="card-title">Status: ${doc.status}</h5>
                                 <h5 class="card-title">Ethernet: ${doc.eth}</h5>
+                                <h5 class="card-title">Ethernet: ${doc.IPWAN}</h5>
                                 <p class="card-text">Heartbeat: ${doc.date}</p>
                             </div>
                             </div>
