@@ -18,7 +18,7 @@ var users = [{
     name: 'Elardus'
 }];
 
-schedule.scheduleJob("* */30 * * * *", function () {
+schedule.scheduleJob("0 */30 * * * *", function () {
     initDb({}, function () {
         var db = getDb();
         db.collection('elmicom').find({ IPWAN: { $exists: true } }).sort().toArray(function (err, docs) {
