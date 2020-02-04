@@ -16,6 +16,9 @@ var users = [{
 }, {
     token: '5cbb0ed05d1ddc6311e0c588',
     name: 'Elardus'
+}, {
+    token: '5e34f845b883f109838a5af6',
+    name: 'Jarryd'
 }];
 
 schedule.scheduleJob("0 */30 * * * *", function () {
