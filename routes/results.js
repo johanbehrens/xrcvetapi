@@ -21,7 +21,7 @@ function AddLiveResults(req, res) {
     let type = req.params.type;
 
     console.log('AddLiveResults');
-    let items = JSON.parse(req.body.items);
+    let items = req.body.items;
     items.map(i => {
         if(i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
         if(i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
@@ -161,22 +161,21 @@ function drasaResults(results, raceId, callback) {
             Rider: item.Rider,
             Horse: item.Horse,
             HCode: item["Passport No"],
-            CALLNAME: " ",
-            FNAME: " ",
-            HCODE: " ",
-            HNAME: " ",
-            TotTime: " ",
-            TOT_TIME: " ",
-            "C/Speed": parseInt(item["Actual Speed"]),
-            Time1: " ",
-            Pulse1: " ",
-            Time2: " ",
-            Pulse2: " ",
-            Time3: " ",
-            Pulse3: " ",
+            CALLNAME: item.CALLNAME,
+            FNAME: item.FNAME,
+            HCODE: item.HCODE,
+            HNAME: item.HNAME,
+            TotTime: item.TOT_TIME,
+            TOT_TIME: item.TOT_TIME,
+            "C/Speed": parseInt(item.AVE_SPD),
+            Time1: item.TIME1,
+            Pulse1: item.PULSE1,
+            Time2: item.TIME2,
+            Pulse2: item.PULSE2,
+            Time3: item.TIME3,
+            Pulse3: item.PULSE3,
             Club: item.Club,
             Points: item["ACTUAL POINTS"]
-            
         }
         if (item.DISQ != '') toReturn.DISQ = item.DISQ;
 

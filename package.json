@@ -11,7 +11,7 @@
     "chokidar": "^3.0.2",
     "convert-excel-to-json": "^1.6.1",
     "cors": "^2.8.5",
-    "cote": "^0.20.0",
+    "cote": "^0.20.3",
     "dbffile": "^1.2.0",
     "email-templates": "^6.0.0",
     "endomondo-unofficial-api": "^1.0.68",

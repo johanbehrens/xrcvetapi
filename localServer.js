@@ -12,7 +12,13 @@ let db;
 let ipadd = ip.address();
 let state = {
     ip: ipadd,
-    timer: 10000,
+    timer: 60000,
+    share: '\\\\192.168.0.104\\D',
+    username:'XRC',
+    password:'xrc',
+    file:'DRASA\\TimekeepingSat\\UIT1BCK0.DBF',
+    type:'DRASA',
+    raceId: "42"
 };
 let serverIp = 'http://209.97.178.43:3000';
 //let serverIp = 'http://localhost:3000';
@@ -34,6 +40,11 @@ function getMacAddress() {
 }
 
 function DoStatusUpdate() {
+
+    updateResults();
+    setTimeout(DoStatusUpdate, state.timer, 'funky');
+    return;
+
     fetch(serverIp + "/results/status", {
         headers: {
             'Accept': 'application/json',
@@ -62,9 +73,10 @@ function DoStatusUpdate() {
             }
             state.raceId = res.raceId;
 
-            if (res.status == 0) clearDatabase();
-            else if (res.status == 1) clearEntries();
-            else if (res.status == 2) updateResults();
+           // if (res.status == 0) clearDatabase();
+           // else if (res.status == 1) clearEntries();
+           // else if (res.status == 2) 
+            
         })
         .catch(function (err) {
             if (err) {
@@ -137,7 +149,7 @@ function updateResults() {
     });
     console.log(state.file);
     if (!state.file) {
-        smb2Client.readdir('', function (err, files) {
+        smb2Client.readdir('DRASA\\TimekeepingSat', function (err, files) {
             console.error('read files');
             if (err) {
                 console.error(err);
@@ -180,13 +192,14 @@ function updateResults() {
 
 function gotFile(file) {
     var workbook = XLSX.read(file, { type: 'buffer' });
+    
     var body = {
         items: filter(XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]])),
         stamp: new Date(),
         raceid: state.raceId
     }
-
-    fetch(serverIp + "/results/" + state.type + "/" + state.raceId, {
+//serverIp + "/results/" + state.type + "/" + state.raceId
+    fetch("http://209.97.178.43:3000/results/DRASA/42", {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -257,10 +270,16 @@ function filter(items) {
             , "HNAME"
             , "HCODE"]
         let returnObj = {};
+
+        if(item.DAYNO == "A003") item.DAYNO = "5869";
+        if(item.DAYNO == "A010") item.DAYNO = "8802";
+        if(item.DAYNO == "A072") item.DAYNO = "294";
+
         mapper.forEach(key => {
             returnObj[key] = item[key];
         });
         console.log(returnObj);
+        
         if (!returnObj["HCODE"]) returnObj["HCODE"] = 'n/a';
         if (!returnObj["TOT_TIME"] || returnObj["TOT_TIME"] == '') returnObj["TOT_TIME"] = '00:00:00';
         if (!returnObj["TOTSLIP"] || returnObj["TOTSLIP"] == '') returnObj["TOTSLIP"] = '00:00:00';
