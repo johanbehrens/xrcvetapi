@@ -27,6 +27,9 @@ function ViewMeter(req, res) {
                 if(doc.status && !doc. eth && doc.status == 'up') {
                     st = 'warning';
                 }
+                if(doc.wan=='down') {
+                    st = 'danger';
+                }
 
                 return st;
             }
@@ -61,6 +64,7 @@ function ViewMeter(req, res) {
                             <div class="card-body">
                                 <h5 class="card-title">Status: ${doc.status}</h5>
                                 <h5 class="card-title">Ethernet: ${doc.eth}</h5>
+                                <h5 class="card-title">WAN: ${doc.wan}</h5>
                                 <h5 class="card-title">IP: ${doc.IPWAN}</h5>
                                 <p class="card-text">Heartbeat: ${doc.date}</p>
                             </div>

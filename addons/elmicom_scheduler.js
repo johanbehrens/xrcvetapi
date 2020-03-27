@@ -34,12 +34,18 @@ schedule.scheduleJob("0 */30 * * * *", function () {
                 ping.sys.probe(host.IPWAN, function (isAlive) {
                     if (isAlive) {
                         console.log('host ' + host.meterId + ' is alive');
+                        if (host.wan == 'down') {
+                            users.forEach(function (user) {
+                                sendPush(new ObjectID(user.token), host.meterId, 'WAN Connection', 'UP');
+                            });
+                        }
                         db.collection('elmicom').updateOne(
                             { meterId: host.meterId },
                             {
                                 $set: {
                                     ...host,
-                                    date: new Date()
+                                    date: new Date(),
+                                    wan: 'up'
                                 }
                             },
                             { upsert: true }, function (err, result) {
@@ -50,9 +56,25 @@ schedule.scheduleJob("0 */30 * * * *", function () {
                     }
                     else {
                         console.log('host ' + host.meterId + ' is dead');
-                        users.forEach(function (user) {
-                            sendPush(new ObjectID(user.token), host.meterId, 'Connection', 'Down');
-                        });
+                        if (host.wan == 'up') {
+                            users.forEach(function (user) {
+                                sendPush(new ObjectID(user.token), host.meterId, 'WAN Connection', 'Down');
+                            });
+                        }
+                        db.collection('elmicom').updateOne(
+                            { meterId: host.meterId },
+                            {
+                                $set: {
+                                    ...host,
+                                    date: new Date(),
+                                    wan: 'down'
+                                }
+                            },
+                            { upsert: true }, function (err, result) {
+                                if (err) {
+                                    console.log(err);
+                                }
+                            });
                     }
                 }, cfg);
             });
