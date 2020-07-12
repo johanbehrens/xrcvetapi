@@ -196,7 +196,6 @@ function createStaticImage(location) {
 }
 
 function AddLocation(req, res) {
-    console.log(req.headers.username + " location update");
 
     if (!req.body.location) return res.send({});
 
@@ -209,6 +208,7 @@ function AddLocation(req, res) {
     var db = getDb();
 
     let type = extras.type ? extras.type : req.headers.type;
+    console.log(req.headers.username + " location update", req.body.location[7],type);
     let username = req.headers.username;
 
     let horseId = extras.horseId ? ObjectID(extras.horseId) : ObjectID(req.headers.horseid);
@@ -290,7 +290,7 @@ function AddLocation(req, res) {
             else {
                 if (!location) res.send({});
 
-                if (Number(req.body[5]) > 100) return res.send({ id: location._id });
+                if (Number(req.body[5]) > 20) return res.send({ id: location._id });
                 db.collection('location').updateOne(
                     toMatch,
                     {

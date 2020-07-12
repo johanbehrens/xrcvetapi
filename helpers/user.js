@@ -53,7 +53,6 @@ function GetAllFriendIds(userId, callback) {
         callback(ids);
     });
 }
-
 function DoFriendInvite(userId, friendId, callback) {
     var db = getDb();
     db.collection('users').updateOne(

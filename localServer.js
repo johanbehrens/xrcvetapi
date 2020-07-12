@@ -12,11 +12,11 @@ let db;
 let ipadd = ip.address();
 let state = {
     ip: ipadd,
-    timer: 60000,
+    timer: 360000,
     share: '\\\\192.168.0.104\\D',
     username:'XRC',
     password:'xrc',
-    file:'DRASA\\TimekeepingSat\\UIT1BCK0.DBF',
+    file:'DRASA\\TimekeepingSun\\UIT1BCK0.DBF',
     type:'DRASA',
     raceId: "42"
 };
@@ -42,7 +42,7 @@ function getMacAddress() {
 function DoStatusUpdate() {
 
     updateResults();
-    setTimeout(DoStatusUpdate, state.timer, 'funky');
+   // setTimeout(DoStatusUpdate, state.timer, 'funky');
     return;
 
     fetch(serverIp + "/results/status", {
@@ -149,7 +149,7 @@ function updateResults() {
     });
     console.log(state.file);
     if (!state.file) {
-        smb2Client.readdir('DRASA\\TimekeepingSat', function (err, files) {
+        smb2Client.readdir('DRASA\\TimekeepingSun', function (err, files) {
             console.error('read files');
             if (err) {
                 console.error(err);

@@ -17,13 +17,14 @@ initDb({}, function (err) {
     }
     var db = getDb();
 
-    var leg = 3;
-    db.collection('location').findOne({ _id: ObjectID("5d3bda49b4166f47990872cb"),"locations.leg":leg }, function (err, location) {
+    var leg = 1;
+    db.collection('location').findOne({ _id: ObjectID("5e5a0ec2ab9be81eb5c272d6")}, function (err, location) {
+        //.filter(f => f.leg == leg)
         let track = {
             userId: location.userId,
             name: location.username,
             leg,
-            locations: location.locations.filter(f => f.leg == leg).map(l => {
+            locations: location.locations.map(l => {
                 return {
                     latitude: l.latitude,
                     longitude: l.longitude
@@ -35,7 +36,7 @@ initDb({}, function (err) {
                 console.log(err);
             }
             db.collection('location').updateOne(
-                { _id: ObjectID("5d3bd8e4b4166f47990872ca") },
+                { _id: ObjectID("5e5a0ec2ab9be81eb5c272d6") },
                 {
                     $set: {
                         trackId: trackIn.ops[0]._id

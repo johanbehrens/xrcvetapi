@@ -5,10 +5,13 @@ var passport = require('passport');
 require('../config/passport')(passport);
 var fetch = require('node-fetch');
 var { GetAllFriendIds } = require('../helpers/user');
+var { register, login, getHorses } = require('../helpers/parkrides');
 
 router.get('/', GetUser);
 router.get('/all', GetAllUsers);
 router.post('/', UpdateUser);
+router.post('/linkParkRides', LinkParkRides);
+router.post('/getParkRideHorses', GetParkRideHorses);
 
 function GetUser(req, res) {
     var db = getDb();
@@ -29,6 +32,48 @@ function GetUser(req, res) {
             res.send(response);
         }
     });
+}
+
+function LinkParkRides(req, res) {
+    register(req.user._id, req.body.riderId, req.body.username, req.body.password, done);
+    function done(err) {
+        if (err) {
+            res.status(500);
+            return res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else {
+            res.send({ message: 'done' });
+        }
+    }
+}
+
+function GetParkRideHorses(req, res) {
+    login(req.body.username, done);
+    function done(err) {
+        if (err) {
+            res.status(500);
+            return res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else {
+            getHorses(gotHorses);
+            function gotHorses(err, horses) {
+                if (err) {
+                    res.status(500);
+                    return res.json({
+                        message: err.message,
+                        error: err
+                    });
+                }
+                return res.send(horses);
+            }
+        }
+    }
 }
 
 function GetAllUsers(req, res) {

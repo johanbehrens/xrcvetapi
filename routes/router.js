@@ -91,13 +91,13 @@ module.exports = (function () {
             var toSend = {
                 username: user.username.toLowerCase(),
                 valid: true,
-				userid: user.id,
-				clubcode: user.clubcode,
-				usertypeid: user.usertypeid,
-				owner: user.owner,
-				isLinked: user.isLinked,
-				rank: user.rank,
-				erasa_code: user.erasa_code
+                userid: user.id,
+                clubcode: user.clubcode,
+                usertypeid: user.usertypeid,
+                owner: user.owner,
+                isLinked: user.isLinked,
+                rank: user.rank,
+                erasa_code: user.erasa_code
             }
             return sendToken(toSend, res, req.body.isWeb)
         }
@@ -115,7 +115,7 @@ module.exports = (function () {
         };
 
         var set = { lastLogin: new Date() };
-        if(isWeb) set ={ lastWebLogin: new Date() };
+        if (isWeb) set = { lastWebLogin: new Date() };
 
         var db = getDb();
         db.collection('users').updateOne({ username: user.username }, { $set: set }, function (err, user) {
@@ -311,20 +311,86 @@ module.exports = (function () {
     }
 
     function Login(req, res) {
-        if (req.body && req.body.ftoken) {
+        if (req.body && req.body.isReset && !req.body.token) {
+            var code = Math.round(Math.random() * 10000);
+            var db = getDb();
+            return db.collection('users').findOne({ username: req.body.username }, function (err, user) {
+                if (err) {
+                    res.status(500);
+                    res.json({
+                        message: err.message,
+                        error: err
+                    });
+                }
+                else if (user) {
+                    return db.collection('resetTokens').insertOne({ email: req.body.username, code }, function (err, rider) {
+                        TemplateEmail(req.body.username, 'resetToken', { code });
+                        return res.json({ 'error': 'Link Sent' });
+                    });
+                }
+                else return res.json({ 'error': 'Email not registered' });
+            });
+        }
+        else if (req.body && req.body.isReset && req.body.token) {
+            if (req.body && !req.body.password) return res.json({ 'error': 'Password required' });
+            if (req.body && !req.body.confirmPassword) return res.json({ 'error': 'Confirm password' });
+            if (req.body && !(req.body.confirmPassword === req.body.password)) return res.json({ 'error': 'Passwords must match' });
+
+            var db = getDb();
+            return db.collection('resetTokens').findOne({ email: req.body.username, code: parseInt(req.body.token) }, function (err, resetPair) {
+                if (err) {
+                    res.status(500);
+                    res.json({
+                        message: err.message,
+                        error: err
+                    });
+                }
+                else if(resetPair) {
+                    return db.collection('users').findOne({ username: req.body.username }, function (err, user) {
+                        if (err) {
+                            res.status(500);
+                            res.json({
+                                message: err.message,
+                                error: err
+                            });
+                        }
+                        else if (user) {
+                            var password = user.salt + crypto.createHash('sha256').update(req.body.password).digest('hex');
+                            var hash = crypto.createHash('sha256').update(password).digest('hex');
+
+                            return db.collection('users').updateOne(
+                                { _id: user._id },
+                                {
+                                    $set: {
+                                        password: hash
+                                    }
+                                }, function (err, d) {
+                                    return db.collection('resetTokens').deleteMany({ email: req.body.username }, function (err) {
+                                        user.password = hash;
+                                        return Authenticate(user, req.body.password, req, res);
+                                    });
+                                });
+                        }
+                        else return res.json({ 'error': 'Email not registered' });
+                    });
+                }
+                else return res.json({ 'error': 'Token not found' });
+            });
+        }
+        else if (req.body && req.body.ftoken) {
             getFacebookUser(req.body.ftoken, req, res);
         }
-        else if(req.body && !req.body.username){
+        else if (req.body && !req.body.username) {
             return res.json({ 'error': 'Please enter a username' });
         }
-        else if(req.body && !req.body.password){
+        else if (req.body && !req.body.password) {
             return res.json({ 'error': 'Please enter a password' });
         }
-        else if(!validateEmail(req.body.username) ){
+        else if (!validateEmail(req.body.username)) {
             return res.json({ 'error': 'You have entered an invalid email address' });
         }
         else if (req.body && req.body.username && req.body.password) {
-            
+
             var db = getDb();
             db.collection('users').findOne({ username: req.body.username.toLowerCase() }, function (err, user) {
                 if (err) {

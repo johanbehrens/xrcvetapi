@@ -6,6 +6,7 @@
     "configurations": [
 
 
+
         {
             "type": "node",
             "request": "launch",
@@ -46,7 +47,13 @@
             "type": "node",
             "request": "launch",
             "name": "Local Server",
-            "program": "${workspaceFolder}/localServer.js"
+            "program": "${workspaceFolder}/localServerscan.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "Pi Server",
+            "program": "${workspaceFolder}/localAPI/server.js"
         }
     ]
 }

@@ -1,8 +1,12 @@
-var printer = require("node-thermal-printer");
-printer.init({
-    type: 'epson',
-    interface: '/dev/usb/lp0'
+var ThermalPrinter = require("node-thermal-printer").printer;
+const PrinterTypes = require("node-thermal-printer").types;
+
+var printer = new ThermalPrinter({
+    type: PrinterTypes.EPSON,
+    interface: '/dev/usb/lp0',
+    driver: require('printer')
 });
+
 
 printer.printQR("QR Code", {
     cellSize: 3,             // 1 - 8

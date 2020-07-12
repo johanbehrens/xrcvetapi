@@ -76,7 +76,7 @@ function AddRider(req, res) {
             if (!rider) {
                 db.collection('rider').insertOne(req.body, function (err, rider) {
                     res.send(rider.ops[0]);
-                    SendNotification(req.user._id, 'Added Rider','Great Job');
+                   // SendNotification(req.user._id, 'Added Rider','Great Job');
                 })
             }
             else {
