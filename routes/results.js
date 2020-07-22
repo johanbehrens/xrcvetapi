@@ -3,6 +3,7 @@ var router = express.Router();
 const getDb = require("../db").getDb;
 var passport = require('passport');
 const async = require('async');
+const rp = require('request-promise');
 
 require('../config/passport')(passport);
 
@@ -23,8 +24,8 @@ function AddLiveResults(req, res) {
     console.log('AddLiveResults');
     let items = req.body.items;
     items.map(i => {
-        if(i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
-        if(i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
+        if (i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
+        if (i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
         if (!i["HCODE"]) i["HCODE"] = 'n/a';
         if (!i["TOT_TIME"] || i["TOT_TIME"] == '') i["TOT_TIME"] = '00:00:00';
         if (!i["TOTSLIP"] || i["TOTSLIP"] == '') i["TOTSLIP"] = '00:00:00';
@@ -112,40 +113,66 @@ function GetLocalServerStatus(req, res) {
 }
 
 function GetResults(req, res) {
-    var db = getDb();
 
-    console.log('GetResults');
-    db.collection('location').find({ type: req.params.type, raceId: req.params.id }).project(resultsProjection).sort({ date: 1, Category: 1, Division: 1, Pos: 1 }).toArray(function (err, results) {
+    var baseURL = 'https://xrc.co.za/m/results.php?raceid='+req.params.id;
+
+
+    let options = {
+        method: 'GET',
+        headers: {
+            'Content-Type': 'application/json'
+        },
+        url: baseURL,
+        json: true
+    };
+
+    rp(options)
+        .then(function (d) {
+            if (d.error) return callback(d.error);
+            //console.log(d);
+            return res.send(d);
+        })
+        .catch(function (err) {
+           // console.log(err);
+            //return callback(err.statusMessage);
+            return res.send(err);
+        });
+
+    /*
+var db = getDb();
+
+console.log('GetResults');
+db.collection('location').find({ type: req.params.type, raceId: req.params.id }).project(resultsProjection).sort({ date: 1, Category: 1, Division: 1, Pos: 1 }).toArray(function (err, results) {
+    
+    console.log('return GetResults');
+    if (err) {
+        res.status(500);
+        res.json({
+            message: err.message,
+            error: err
+        });
+    }
+    else {
         
-        console.log('return GetResults');
-        if (err) {
-            res.status(500);
-            res.json({
-                message: err.message,
-                error: err
-            });
+
+        if (req.params.type == 'DRASA') {
+            return res.send(drasaResults(results));
         }
         else {
-            
-
-            if (req.params.type == 'DRASA') {
-                return res.send(drasaResults(results));
-            }
-            else {
-                transformResults(results, req.params.id, done);
-            }
-            function done(err, trans) {
-                if (err) {
-                    res.status(500);
-                    res.json({
-                        message: err.message,
-                        error: err
-                    });
-                }
-                else res.send(trans);
-            }
+            transformResults(results, req.params.id, done);
         }
-    });
+        function done(err, trans) {
+            if (err) {
+                res.status(500);
+                res.json({
+                    message: err.message,
+                    error: err
+                });
+            }
+            else res.send(trans);
+        }
+    }
+});*/
 }
 
 function drasaResults(results, raceId, callback) {

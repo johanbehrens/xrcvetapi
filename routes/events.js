@@ -4,6 +4,7 @@ const getDb = require("../db").getDb;
 var passport = require('passport');
 require('../config/passport')(passport);
 var fetch = require('node-fetch');
+const rp = require('request-promise');
 
 router.post('/', passport.authenticate('jwt', { session: false }), AddEvent);
 router.post('/:id/', passport.authenticate('jwt', { session: false }), AddEventItem);
@@ -39,20 +40,55 @@ function ImportEvents(req, res) {
 function GetEvent(req, res) {
     var db = getDb();
 
-    db.collection('event').findOne({ old_id: parseInt(req.params.id) }, function (err, doc) {
-        if (err) {
-            res.status(500);
-            res.json({
-                message: err.message,
-                error: err
-            });
-        }
-        else res.send(doc);
-    });
+    
+
+    
+db.collection('event').findOne({ old_id: parseInt(req.params.id) }, function (err, doc) {
+    if (err) {
+        res.status(500);
+        res.json({
+            message: err.message,
+            error: err
+        });
+    }
+    else res.send(doc);
+});
 }
 
 function GetEvents(req, res) {
     var db = getDb();
+
+    var baseURL = 'https://xrc.co.za/m/ride_func.php';
+    var data = {
+        offset: 0,
+        limit: 9,
+        function: 'getRides'
+    };
+
+    let options = {
+        method: 'POST',
+        headers: {
+            'Content-Type': 'application/json',
+            'Content-Length': data.length
+        },
+        body: data,
+        url: baseURL,
+        json: true
+    };
+
+    rp(options)
+        .then(function (d) {
+            if (d.error) return callback(d.error);
+            console.log(d);
+           // return callback(null, d);
+        res.send(d);
+        })
+        .catch(function (err) {
+            console.log(err);
+            //return callback(err.statusMessage);
+        res.send(err);
+        });
+        /*
     db.collection('event').find({}).sort({ start: -1 }).toArray(function (err, doc) {
         if (err) {
             res.status(500);
@@ -69,12 +105,12 @@ function GetEvents(req, res) {
             });
             res.send(doc);
         }
-    });
+    });*/
 }
 
 function AddEvent(req, res) {
     var db = getDb();
-    var event ={
+    var event = {
         ...req.body,
         start: req.body.date,
         end: req.body.date
