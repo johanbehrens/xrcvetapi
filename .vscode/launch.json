@@ -52,8 +52,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Pi Server",
-            "program": "${workspaceFolder}/localAPI/server.js"
+            "name": "test",
+            "program": "${workspaceFolder}/test.js"
         }
     ]
 }

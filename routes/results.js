@@ -3,7 +3,7 @@ var router = express.Router();
 const getDb = require("../db").getDb;
 var passport = require('passport');
 const async = require('async');
-const rp = require('request-promise');
+const sites = require('../helpers/sites');
 
 require('../config/passport')(passport);
 
@@ -113,30 +113,22 @@ function GetLocalServerStatus(req, res) {
 }
 
 function GetResults(req, res) {
+    console.log('GetResults');
 
-    var baseURL = 'https://xrc.co.za/m/results.php?raceid='+req.params.id;
+    sites.getResults(req.params.type, req.params.id, done);
 
-
-    let options = {
-        method: 'GET',
-        headers: {
-            'Content-Type': 'application/json'
-        },
-        url: baseURL,
-        json: true
-    };
-
-    rp(options)
-        .then(function (d) {
-            if (d.error) return callback(d.error);
-            //console.log(d);
-            return res.send(d);
-        })
-        .catch(function (err) {
-           // console.log(err);
-            //return callback(err.statusMessage);
-            return res.send(err);
-        });
+    function done(err, results) {
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else {
+            res.send(results);
+        }
+    }
 
     /*
 var db = getDb();

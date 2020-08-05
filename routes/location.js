@@ -10,6 +10,7 @@ const image2base64 = require('image-to-base64');
 var { GetUserIds } = require('../helpers/user');
 var { enqueue } = require('../helpers/jobqueue');
 const async = require("async");
+const user = require('../helpers/user');
 
 router.post('/', passport.authenticate('jwt', { session: false }), AddLocation);
 router.get('/', passport.authenticate('jwt', { session: false }), GetLocations);
@@ -131,32 +132,18 @@ function GetLocation(req, res) {
 }
 
 function GetLocations(req, res) {
-    var db = getDb();
-    GetUserIds(req.user._id, doGetLocations);
+    console.log('GetLocations');
+    user.GetHistory(req.user._id, doGetLocations)
 
-    function doGetLocations(userIds) {
-        console.log('GetLocations');
-        db.collection('location').aggregate(locationAggregate(userIds)).toArray(function (err, location) {
-            console.log('return GetLocations');
-            if (err) {
-                res.status(500);
-                res.json({
-                    message: err.message,
-                    error: err
-                });
-            }
-            else {
-                location.map(l => {
-                    l.edit = false;
-                    l.own = false;
-                    if (l.userId.toString() == req.user._id.toString()) {
-                        l.own = true;
-                        l.edit = true;
-                    }
-                });
-                res.send(location);
-            }
-        });
+    function doGetLocations(err, locations) {
+        if (err) {
+            res.status(500);
+            return res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        return res.send(locations);
     }
 }
 
@@ -174,7 +161,7 @@ function createStaticImage(location) {
 
     var path = location.locations.map(l => l.latitude + ',' + l.longitude).reduce((y, item) => y + '|' + item);
     var end = location.locations[location.locations.length - 1].odometer;
-    let url = `http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=300x300&path=${path}`;
+    let url = `http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=900x300&path=${path}`;
     console.log(url);
     image2base64(url)
         .then(response => {
@@ -288,7 +275,7 @@ function AddLocation(req, res) {
                 })
             }
             else {
-                if (!location) res.send({});
+                if (!location) return res.send({});
 
                 if (Number(req.body[5]) > 20) return res.send({ id: location._id });
                 db.collection('location').updateOne(
@@ -335,59 +322,6 @@ function AddLocation(req, res) {
         }
 
     });
-}
-
-function locationAggregate(Ids) {
-    let t = [{
-        $match: {
-            userId: { $in: Ids }
-        }
-    },
-    {
-        $project: { locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1, imageId: 1, trackId: 1 }
-    },
-    {
-        $lookup: {
-            "from": "rider",
-            "localField": "riderId",
-            "foreignField": "_id",
-            "as": "rider"
-        }
-    },
-    {
-        $unwind: {
-            path: "$rider"
-        }
-    },
-    {
-        $lookup: {
-            "from": "horse",
-            "localField": "horseId",
-            "foreignField": "_id",
-            "as": "horse"
-        }
-    },
-    {
-        $unwind: {
-            path: "$horse"
-        }
-    },
-    {
-        $project: {
-            locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1,
-            name: "$rider.name", surname: "$rider.surname", riderImageId: "$rider.imageId",
-            hname: "$horse.name", horseImageId: "$horse.imageId",
-            imageId: 1, trackId: 1
-        }
-    },
-    {
-        $sort: {
-            date: -1
-        }
-    }
-    ];
-    console.log(t);
-    return t;
 }
 
 function raceLocationsAggregate(raceId) {

@@ -7,7 +7,7 @@ function initDb(app, callback) {
         return callback(null, _db);
     }
 
-    client.connect(config.database, connected);
+    client.connect(config.database, { useUnifiedTopology: true }, connected);
     function connected(err, client) {
         if (err) {
             return callback(err);

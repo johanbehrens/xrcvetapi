@@ -11,6 +11,7 @@ router.get('/:id', AddLocation);
 
 function AddLocation(req, res) {
     var db = getDb();
+    if(req.params.id == 'undefined') return res.send();
     var id = new ObjectID(req.params.id);
     db.collection('profilepicture').findOne({ _id: id }, function (err, doc) {
         if (doc) {
