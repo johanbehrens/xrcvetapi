@@ -106,7 +106,15 @@ function GetLocation(req, res) {
 
     console.log('GetLocation:' + req.params.id);
     if (!req.params.id || req.params.id == 'undefined') return res.send();
-    db.collection('location').findOne({ _id: ObjectID(req.params.id) }, function (err, location) {
+
+
+    var db = getDb();
+
+    console.log('GetLiveLocationsForRace');
+    db.collection('location').aggregate(privateLocationAggregate(req.params.id)).toArray(function (err, locations) {
+
+        var location = locations[0];
+        // db.collection('location').findOne({ _id: ObjectID(req.params.id) }, function (err, location) {
 
         console.log('return GetLocation:' + req.params.id);
         if (err) {
@@ -127,6 +135,7 @@ function GetLocation(req, res) {
             location.edit = true;
         }
 
+        delete location.locations;
         res.send(location);
     });
 }
@@ -170,13 +179,13 @@ function createStaticImage(location) {
                 imageId = image.ops[0]._id;
                 db.collection('location').updateOne(
                     { locationRideId: location.locationRideId }, {
-                        $set: {
-                            imageId: imageId,
-                            end
-                        }
-                    }, function (err, result) {
-                        return;
-                    })
+                    $set: {
+                        imageId: imageId,
+                        end
+                    }
+                }, function (err, result) {
+                    return;
+                })
             });
         }
         )
@@ -195,7 +204,7 @@ function AddLocation(req, res) {
     var db = getDb();
 
     let type = extras.type ? extras.type : req.headers.type;
-    console.log(req.headers.username + " location update", req.body.location[7],type);
+    console.log(req.headers.username + " location update", req.body.location[7], type);
     let username = req.headers.username;
 
     let horseId = extras.horseId ? ObjectID(extras.horseId) : ObjectID(req.headers.horseid);
@@ -369,6 +378,40 @@ function raceLocationsAggregate(raceId) {
     }, {
         $unwind: {
             path: "$rider"
+        }
+    }];
+}
+
+function privateLocationAggregate(locationId) {
+    return [{
+        $match: {
+            _id: ObjectID(locationId)
+        }
+    }, {
+        $lookup: {
+            "from": "rider",
+            "localField": "riderId",
+            "foreignField": "_id",
+            "as": "rider"
+        }
+    }, {
+        $lookup: {
+            "from": "horse",
+            "localField": "horseId",
+            "foreignField": "_id",
+            "as": "horse"
+        }
+    }, {
+        $project: {
+            locations: 0
+        }
+    }, {
+        $unwind: {
+            path: "$rider"
+        }
+    }, {
+        $unwind: {
+            path: "$horse"
         }
     }];
 }

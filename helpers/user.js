@@ -115,7 +115,7 @@ function locationAggregate(Ids) {
         }
     },
     {
-        $project: { locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1, imageId: 1, trackId: 1 }
+        $project: { locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1, imageId: 1, trackId: 1, parkridesTrackId:1 }
     },
     {
         $lookup: {
@@ -145,7 +145,7 @@ function locationAggregate(Ids) {
     },
     {
         $project: {
-            locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1,
+            locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1, parkridesTrackId:1,
             name: "$rider.name", surname: "$rider.surname", riderImageId: "$rider.imageId",
             hname: "$horse.name", horseImageId: "$horse.imageId",
             type: "PERSONAL",
