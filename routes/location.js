@@ -402,10 +402,6 @@ function privateLocationAggregate(locationId) {
             "as": "horse"
         }
     }, {
-        $project: {
-            locations: 0
-        }
-    }, {
         $unwind: {
             path: "$rider"
         }
