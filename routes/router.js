@@ -252,6 +252,16 @@ module.exports = (function () {
                     }
                     else { //get user from xrc
                         ImportUser(femail, function (err, user) {
+                            if(err){
+                                if (err) {
+                                    res.status(500);
+                                    res.json({
+                                        message: err.message,
+                                        error: err
+                                    });
+                                }
+                            }
+
                             if (user) {
                                 db.collection('users').insertOne(user, function (err, newUser) {
                                     if (err) {

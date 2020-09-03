@@ -80,7 +80,7 @@ function GetEventEntries(req, res) {
 }
 
 function GetEvents(req, res) {
-    
+
     req.query.page = parseInt(req.query.page) + 1;
     let start = 0;
     let end = req.query.page * 20;
@@ -90,12 +90,13 @@ function GetEvents(req, res) {
     else {
         end = 20;
     }
-    console.log('GetEvents',start,end);
+    console.log('GetEvents', start, end);
 
     let functionList = {
         ERASA: async.apply(sites.getEvents, 'ERASA'),
         DRASA: async.apply(sites.getEvents, 'DRASA'),
         NAMEF: async.apply(sites.getEvents, 'NAMEF'),
+        NAMEF: async.apply(sites.getEvents, 'PARKRIDES'),
         PRIVATE: async.apply(user.GetHistory, req.user._id)
     };
 
@@ -108,19 +109,19 @@ function GetEvents(req, res) {
         }
         var list = [];
 
-        if(results['ERASA']) list = [...results['ERASA']];
-        if(results['DRASA']) list = [...list, ...results['DRASA']];
-        if(results['NAMEF']) list = [...list, ...results['NAMEF']];
-        if(results['PRIVATE']) list = [...list, ...results['PRIVATE']];
+        if (results['ERASA']) list = [...results['ERASA']];
+        if (results['DRASA']) list = [...list, ...results['DRASA']];
+        if (results['NAMEF']) list = [...list, ...results['NAMEF']];
+        if (results['PRIVATE']) list = [...list, ...results['PRIVATE']];
 
         list = list.sort(function (a, b) {
-            if(a.type == 'PERSONAL') {
-                a.start = a.date;
+            if (a.type == 'PERSONAL') {
+                a.end = a.date;
             }
-            if(b.type == 'PERSONAL') b.start = b.date;
+            if (b.type == 'PERSONAL') b.end = b.date;
 
-            let aStart = moment(a.start);
-            let bStart = moment(b.start);
+            let aStart = moment(a.end);
+            let bStart = moment(b.end);
 
             if (aStart > bStart) return -1;
             else if (bStart > aStart) return 1;
@@ -129,10 +130,54 @@ function GetEvents(req, res) {
 
         list = list.slice(start, end);
         let counter = start;
-        list = list.map(function(item) {
+        list = list.map(function (item) {
             item.newId = counter++;
             return item;
         });
+
+        let rest = [];
+        let live = [];
+        let upcoming = [];
+        let active = [];
+
+        list.forEach(event => {
+            if (event) {
+                let deventDate = new Date(event.start);
+                let eventDate = deventDate.toISOString().split('T')[0];
+
+                let dendDate = new Date(event.end);
+                let endDate = dendDate.toISOString().split('T')[0];
+
+                let dtoday = new Date();
+                let today = dtoday.toISOString().split('T')[0];
+
+                if (eventDate != endDate && deventDate <= dtoday && dtoday <= dendDate) {
+                    event._active = true;
+                    event._text = 'ACTIVE';
+                    active.push(event);
+                }
+                else if (eventDate == today) {
+                    event._live = true;
+                    event._text = 'LIVE';
+                    live.push(event);
+                }
+                else if (new Date(event.start) < new Date()) {
+                    event._result = true;
+                    event._text = 'LIVE';
+                    rest.push(event);
+                    if (event.hasResults == '1') event._text = 'RESULTS';
+                    else event._text = 'RESULTS PENDING';
+                }
+                else {
+                    event._upcoming = true;
+                    upcoming.push(event);
+                    if (event.isClosed == '0') event._text = 'ENTER NOW';
+                    else event._text = 'ENTRIES CLOSED';
+                }
+            }
+        });
+
+        list = [...live, ...active, ...upcoming, ...rest];
 
         return res.json(list);
 
