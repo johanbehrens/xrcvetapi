@@ -96,7 +96,7 @@ function GetEvents(req, res) {
         ERASA: async.apply(sites.getEvents, 'ERASA'),
         DRASA: async.apply(sites.getEvents, 'DRASA'),
         NAMEF: async.apply(sites.getEvents, 'NAMEF'),
-        NAMEF: async.apply(sites.getEvents, 'PARKRIDES'),
+        PARKRIDES: async.apply(sites.getEvents, 'PARKRIDES'),
         PRIVATE: async.apply(user.GetHistory, req.user._id)
     };
 
@@ -111,6 +111,7 @@ function GetEvents(req, res) {
 
         if (results['ERASA']) list = [...results['ERASA']];
         if (results['DRASA']) list = [...list, ...results['DRASA']];
+        if (results['PARKRIDES']) list = [...list, ...results['PARKRIDES']];
         if (results['NAMEF']) list = [...list, ...results['NAMEF']];
         if (results['PRIVATE']) list = [...list, ...results['PRIVATE']];
 
