@@ -193,18 +193,24 @@ function createStaticImage(location) {
 
 function AddLocation(req, res) {
 
-    if (!req.body.location) return res.send({});
+    if (!req.body.location) {
+        console.log(req.headers.username + " location update FAILED 1", req.body);
+        return res.send({});
+    }
 
     let extras = {};
     if (req.body.location[8]) extras = req.body.location[8];
 
     let locationRideId = extras.uuid ? extras.uuid : req.headers.id;
-    if (!locationRideId) return res.send();
+    if (!locationRideId) {
+        console.log(req.headers.username + " location update FAILED 2", req.body.location);
+        return res.send();
+    }
 
     var db = getDb();
 
     let type = extras.type ? extras.type : req.headers.type;
-    console.log(req.headers.username + " location update", req.body.location[7], type);
+    console.log(req.headers.username + " location update", req.body.location, type);
     let username = req.headers.username;
 
     let horseId = extras.horseId ? ObjectID(extras.horseId) : ObjectID(req.headers.horseid);
@@ -382,34 +388,89 @@ function raceLocationsAggregate(raceId) {
     }];
 }
 
+
+
+
+
 function privateLocationAggregate(locationId) {
     return [{
         $match: {
             _id: ObjectID(locationId)
         }
     }, {
+        $unwind: {
+            path: "$locations"
+        }
+    },
+    {
+        $group: {
+            _id: {
+                id: "$_id", userId: "$userId", username: "$username", horseId: "$horseId", riderId: "$riderId", raceId: "$raceId",
+                riderNumber: "$riderNumber",
+                date: "$date",
+                start: "$start",
+                imageId: "$imageId",
+                trackId: "$trackId"
+            },
+            minAltitude: { $min: "$locations.altitude" },
+            maxAltitude: { $max: "$locations.altitude" },
+            minDate: { $min: "$locations.timestamp" },
+            maxDate: { $max: "$locations.timestamp" },
+            maxSpeed: { $max: "$locations.speed" },
+            start: { $min: "$locations.odometer" },
+            end: { $max: "$locations.odometer" },
+
+
+        }
+    },
+    {
+        $project: {
+            _id: false,
+            _id: "$_id.id",
+            userId: "$_id.userId",
+            username: "$_id.username",
+            horseId: "$_id.horseId",
+            riderId: "$_id.riderId",
+            raceId: "$_id.raceId",
+            riderNumber: "$_id.riderNumber",
+            date: "$_id.date",
+            start: "$_id.start",
+            imageId: "$_id.imageId",
+            trackId: "$_id.trackId",
+            minAlt: "$minAltitude",
+            maxAlt: "$maxAltitude",
+            maxSpeed: "$maxSpeed",
+            distance: { $subtract: ["$end", "$start"] },
+            time: { $subtract: ["$maxDate", "$minDate"] }
+        }
+    },
+    {
         $lookup: {
             "from": "rider",
             "localField": "riderId",
             "foreignField": "_id",
             "as": "rider"
         }
-    }, {
+    },
+    {
         $lookup: {
             "from": "horse",
             "localField": "horseId",
             "foreignField": "_id",
             "as": "horse"
         }
-    }, {
+    },
+    {
         $unwind: {
             path: "$rider"
         }
-    }, {
+    },
+    {
         $unwind: {
             path: "$horse"
         }
-    }];
+    },
+    ];
 }
 
 module.exports = router;

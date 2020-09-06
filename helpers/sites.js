@@ -5,8 +5,7 @@ const rp = require('request-promise');
 let xrcBaseURL = 'https://xrc.co.za/m/';
 let xrcNamBaseURL = 'https://nam.xrc.co.za/m/';
 let drasaBaseURL = 'https://drasa.org.za/m/';
-let parkRidesBaseURL = 'https://drasa.org.za/m/';
-parkRidesBaseURL = 'http://209.97.178.43/api/';
+let parkRidesBaseURL = 'http://209.97.178.43/api/';
 
 /*
  xrcBaseURL = 'http://xrc/m/';

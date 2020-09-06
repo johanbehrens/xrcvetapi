@@ -81,7 +81,30 @@ function GetEventEntries(req, res) {
 
 function GetEvents(req, res) {
 
+    let functionList = {
+        ERASA: async.apply(sites.getEvents, 'ERASA'),
+        DRASA: async.apply(sites.getEvents, 'DRASA'),
+        NAMEF: async.apply(sites.getEvents, 'NAMEF'),
+        PARKRIDES: async.apply(sites.getEvents, 'PARKRIDES'),
+        PRIVATE: async.apply(user.GetHistory, req.user._id)
+    };
+
     req.query.page = parseInt(req.query.page) + 1;
+    if(req.query.filter){
+        functionList = {};
+
+        let newfilter = req.query.filter.split(',');
+        newfilter.forEach(fil => {
+            let t = fil.split(':');
+            if(t[0] == 'ERASA' && t[1] == 'true') functionList['ERASA'] = async.apply(sites.getEvents, 'ERASA');
+            if(t[0] == 'DRASA' && t[1] == 'true') functionList['DRASA'] = async.apply(sites.getEvents, 'DRASA');
+            if(t[0] == 'NAMEF' && t[1] == 'true') functionList['NAMEF'] = async.apply(sites.getEvents, 'NAMEF');
+            if(t[0] == 'PARKRIDES' && t[1] == 'true') functionList['PARKRIDES'] = async.apply(sites.getEvents, 'PARKRIDES');
+
+            if(t[0] == 'PERSONAL' && t[1] == 'true') functionList['PRIVATE'] = async.apply(user.GetHistory, req.user._id)
+        });
+    }
+
     let start = 0;
     let end = req.query.page * 20;
     if (end > 0) {
@@ -92,13 +115,7 @@ function GetEvents(req, res) {
     }
     console.log('GetEvents', start, end);
 
-    let functionList = {
-        ERASA: async.apply(sites.getEvents, 'ERASA'),
-        DRASA: async.apply(sites.getEvents, 'DRASA'),
-        NAMEF: async.apply(sites.getEvents, 'NAMEF'),
-        PARKRIDES: async.apply(sites.getEvents, 'PARKRIDES'),
-        PRIVATE: async.apply(user.GetHistory, req.user._id)
-    };
+    
 
     async.parallel(functionList, formatData);
 
