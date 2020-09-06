@@ -126,7 +126,7 @@ function GetLocation(req, res) {
         }
         if (!location) return res.send({});
 
-        if (!location.imageId && location.userId && location.userId.toString() == req.user._id.toString()) createStaticImage(location);
+        if (!location.imageId && location.userId && location.userId.toString() == req.user._id.toString()) createStaticImage(location, req, res);
 
         location.edit = false;
         location.own = false;
@@ -156,8 +156,8 @@ function GetLocations(req, res) {
     }
 }
 
-function createStaticImage(location) {
-    if (location.locations && location.locations.length > 100) {
+function getGoogleImageandSave(location) {
+    if (location && location.locations && location.locations.length > 100) {
         var arr = [];
         var maxVal = 100;
         var delta = Math.floor(location.locations.length / maxVal);
@@ -168,27 +168,54 @@ function createStaticImage(location) {
         location.locations = arr;
     }
 
-    var path = location.locations.map(l => l.latitude + ',' + l.longitude).reduce((y, item) => y + '|' + item);
-    var end = location.locations[location.locations.length - 1].odometer;
-    let url = `http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=900x300&path=${path}`;
-    console.log(url);
-    image2base64(url)
-        .then(response => {
-            var db = getDb();
-            db.collection('profilepicture').insertOne({ image: response }, function (err, image) {
-                imageId = image.ops[0]._id;
-                db.collection('location').updateOne(
-                    { locationRideId: location.locationRideId }, {
-                    $set: {
-                        imageId: imageId,
-                        end
-                    }
-                }, function (err, result) {
-                    return;
-                })
-            });
-        }
-        )
+    if (location) {
+        var path = location.locations.map(l => l.latitude + ',' + l.longitude).reduce((y, item) => y + '|' + item);
+        var end = location.locations[location.locations.length - 1].odometer;
+        let url = `http://maps.googleapis.com/maps/api/staticmap?key=AIzaSyA6Qwnkrpop_DzlDFWhI34bB7n8BXygxYg&size=900x300&path=${path}`;
+        console.log(url);
+        image2base64(url)
+            .then(response => {
+                var db = getDb();
+                db.collection('profilepicture').insertOne({ image: response }, function (err, image) {
+                    imageId = image.ops[0]._id;
+                    db.collection('location').updateOne(
+                        { locationRideId: location.locationRideId }, {
+                        $set: {
+                            imageId: imageId,
+                            end
+                        }
+                    }, function (err, result) {
+                        if(err) console.log(err);
+                        return;
+                    })
+                });
+            }
+            )
+    }
+}
+
+function createStaticImage(location, req, res) {
+    var db = getDb();
+    if (location) {
+        db.collection('location').findOne({ _id: location._id }, function (err, location) {
+            if (err) {
+                return console.log('Error creating image', err);
+            }
+            getGoogleImageandSave(location);
+        });
+    }
+    //else get last location for user and create image
+    else {
+        let userId = req.user._id;
+
+        db.collection('location').findOne({ userId, imageId: { $exists: false } }, function (err, location) {
+            if (err) {
+                return console.log('Error creating image', err);
+            }
+            getGoogleImageandSave(location);
+        });
+    }
+
 }
 
 function AddLocation(req, res) {
@@ -203,6 +230,7 @@ function AddLocation(req, res) {
 
     let locationRideId = extras.uuid ? extras.uuid : req.headers.id;
     if (!locationRideId) {
+        if (extras && extras.type == 'STOP') createStaticImage(null, req, res);
         console.log(req.headers.username + " location update FAILED 2", req.body.location);
         return res.send();
     }
@@ -219,6 +247,7 @@ function AddLocation(req, res) {
     delete req.body.location[8];
 
     let riderNumber = extras.riderNumber ? extras.riderNumber : req.headers.ridernumber;
+    let raceType = extras.raceType ? extras.raceType : req.headers.raceType;
 
     if (req.body.location) req.body = req.body.location;
     let userId = req.user._id;
@@ -230,6 +259,7 @@ function AddLocation(req, res) {
     if (raceId) {
         toMatch = {
             raceId,
+            raceType,
             riderNumber
         }
     }
@@ -251,6 +281,7 @@ function AddLocation(req, res) {
                     horseId,
                     riderId,
                     raceId,
+                    raceType,
                     riderNumber,
                     date: new ISODate(req.body[7]),
                     start: Number(req.body[6]),
@@ -318,7 +349,7 @@ function AddLocation(req, res) {
                         }
                     }, function (err, l) {
                         if (type === 'STOP' && location) {
-                            createStaticImage(location, res);
+                            createStaticImage(location, req, res);
                             delete location.locations;
                             res.send(location);
                         }
