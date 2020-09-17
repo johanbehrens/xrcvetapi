@@ -45,9 +45,6 @@ function ImportEvents(req, res) {
 function GetEvent(req, res) {
     var db = getDb();
 
-
-
-
     db.collection('event').findOne({ old_id: parseInt(req.params.id) }, function (err, doc) {
         if (err) {
             res.status(500);
@@ -57,6 +54,14 @@ function GetEvent(req, res) {
             });
         }
         else res.send(doc);
+    });
+}
+
+function GetLocalEvents(callback) {
+    var db = getDb();
+    
+    db.collection('event').find({}).toArray(function (err, events) {
+        return callback(err, events);
     });
 }
 
@@ -86,7 +91,8 @@ function GetEvents(req, res) {
         DRASA: async.apply(sites.getEvents, 'DRASA'),
         NAMEF: async.apply(sites.getEvents, 'NAMEF'),
         PARKRIDES: async.apply(sites.getEvents, 'PARKRIDES'),
-        PRIVATE: async.apply(user.GetHistory, req.user._id)
+        PRIVATE: async.apply(user.GetHistory, req.user._id),
+        LOCAL: GetLocalEvents
     };
 
     req.query.page = parseInt(req.query.page) + 1;
@@ -100,8 +106,8 @@ function GetEvents(req, res) {
             if(t[0] == 'DRASA' && t[1] == 'true') functionList['DRASA'] = async.apply(sites.getEvents, 'DRASA');
             if(t[0] == 'NAMEF' && t[1] == 'true') functionList['NAMEF'] = async.apply(sites.getEvents, 'NAMEF');
             if(t[0] == 'PARKRIDES' && t[1] == 'true') functionList['PARKRIDES'] = async.apply(sites.getEvents, 'PARKRIDES');
-
-            if(t[0] == 'PERSONAL' && t[1] == 'true') functionList['PRIVATE'] = async.apply(user.GetHistory, req.user._id)
+            if(t[0] == 'PERSONAL' && t[1] == 'true') functionList['PRIVATE'] = async.apply(user.GetHistory, req.user._id);
+            functionList['LOCAL'] = GetLocalEvents
         });
     }
 
@@ -114,8 +120,6 @@ function GetEvents(req, res) {
         end = 20;
     }
     console.log('GetEvents', start, end);
-
-    
 
     async.parallel(functionList, formatData);
 
@@ -192,6 +196,9 @@ function GetEvents(req, res) {
                     if (event.isClosed == '0') event._text = 'ENTER NOW';
                     else event._text = 'ENTRIES CLOSED';
                 }
+
+                let l = results.LOCAL.find(ev => ev.id == event.id && ev.type == event.type);
+                if(l) event.legs = l.legs;
             }
         });
 

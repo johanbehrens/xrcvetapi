@@ -419,10 +419,6 @@ function raceLocationsAggregate(raceId) {
     }];
 }
 
-
-
-
-
 function privateLocationAggregate(locationId) {
     return [{
         $match: {

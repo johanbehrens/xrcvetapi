@@ -113,9 +113,53 @@ function locationAggregate(Ids) {
         $match: {
             userId: { $in: Ids }
         }
+    }, {
+        $unwind: {
+            path: "$locations"
+        }
     },
     {
-        $project: { locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1, imageId: 1, trackId: 1, parkridesTrackId:1 }
+        $group: {
+            _id: {
+                id: "$_id", userId: "$userId", username: "$username", horseId: "$horseId", riderId: "$riderId", raceId: "$raceId",
+                riderNumber: "$riderNumber",
+                date: "$date",
+                start: "$start",
+                imageId: "$imageId",
+                trackId: "$trackId"
+            },
+            minAltitude: { $min: "$locations.altitude" },
+            maxAltitude: { $max: "$locations.altitude" },
+            minDate: { $min: "$locations.timestamp" },
+            maxDate: { $max: "$locations.timestamp" },
+            maxSpeed: { $max: "$locations.speed" },
+            startOdo: { $min: "$locations.odometer" },
+            endOdo: { $max: "$locations.odometer" },
+
+
+        }
+    },
+    {
+        $project: {
+            _id: false,
+            _id: "$_id.id",
+            userId: "$_id.userId",
+            username: "$_id.username",
+            horseId: "$_id.horseId",
+            riderId: "$_id.riderId",
+            raceId: "$_id.raceId",
+            riderNumber: "$_id.riderNumber",
+            date: "$_id.date",
+            start: "$_id.start",
+            imageId: "$_id.imageId",
+            trackId: "$_id.trackId",
+            minAlt: "$minAltitude",
+            maxAlt: "$maxAltitude",
+            maxSpeed: "$maxSpeed",
+            endOdo: "$endOdo",
+            startOdo: "$startOdo",
+            time: { $subtract: ["$maxDate", "$minDate"] }
+        }
     },
     {
         $lookup: {
@@ -123,11 +167,6 @@ function locationAggregate(Ids) {
             "localField": "riderId",
             "foreignField": "_id",
             "as": "rider"
-        }
-    },
-    {
-        $unwind: {
-            path: "$rider"
         }
     },
     {
@@ -140,6 +179,11 @@ function locationAggregate(Ids) {
     },
     {
         $unwind: {
+            path: "$rider"
+        }
+    },
+    {
+        $unwind: {
             path: "$horse"
         }
     },
@@ -148,8 +192,15 @@ function locationAggregate(Ids) {
             locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1, parkridesTrackId:1,
             name: "$rider.name", surname: "$rider.surname", riderImageId: "$rider.imageId",
             hname: "$horse.name", horseImageId: "$horse.imageId",
+            minAlt: "$minAlt",
+            maxAlt: "$maxAlt",
+            maxSpeed: "$maxSpeed",
+            startOdo: "$startOdo",
+            endOdo: "$endOdo",
+            time: "$time",
             type: "PERSONAL",
-            imageId: 1, trackId: 1
+            imageId: 1, 
+            trackId: 1
         }
     },
     {
