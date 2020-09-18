@@ -14,7 +14,11 @@ const user = require('../helpers/user');
 
 router.post('/', passport.authenticate('jwt', { session: false }), AddLocation);
 router.get('/', passport.authenticate('jwt', { session: false }), GetLocations);
+
+router.post('/:id/reactions', passport.authenticate('jwt', { session: false }), DoReactions);
+router.get('/:id/reactions', passport.authenticate('jwt', { session: false }), GetReactions);
 router.post('/update', passport.authenticate('jwt', { session: false }), GetLocationUpdate);
+
 router.get('/liveUpdates/:raceid', GetLiveLocationsForRace);
 router.get('/liveUpdates/tracks/:id', GetLiveTracksForRace);
 router.get('/:id', passport.authenticate('jwt', { session: false }), GetLocation);
@@ -98,6 +102,79 @@ function GetLocationUpdate(req, res) {
         if (!location.locations) return res.send([]);
 
         res.send(location.locations.filter(loc => loc.timestamp > new Date(req.body.timestamp)));
+    });
+}
+
+function DoReactions(req, res) {
+    var db = getDb();
+
+    console.log('DoReaction:',req.params.id,req.body.reaction);
+
+    db.collection('location').findOne({ _id: ObjectID(req.params.id) }, function (err, location) {
+        if (err) {
+            res.status(500);
+            return res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else if (location.reactions) {
+            let myReaction = location.reactions.find(i => i.userId.toString() === req.user._id.toString());
+            if (myReaction) myReaction.reaction = req.body.reaction;
+            db.collection('location').updateOne(
+                { _id: ObjectID(req.params.id) }, {
+                $set: {
+                    reactions: location.reactions
+                }
+            }, function (err, result) {
+                if (err) {
+                    res.status(500);
+                    return res.json({
+                        message: err.message,
+                        error: err
+                    });
+                }
+                return res.send(location.reactions);
+            });
+        }
+        else {
+            let newReaction = {
+                reaction: req.body.reaction,
+                userId: req.user._id
+            }
+            db.collection('location').updateOne(
+                { _id: ObjectID(req.params.id) }, {
+                $push: {
+                    reactions: newReaction
+                }
+            }, function (err, result) {
+                if (err) {
+                    res.status(500);
+                    return res.json({
+                        message: err.message,
+                        error: err
+                    });
+                }
+                return res.send([newReaction]);
+            });
+        }
+    });
+}
+
+function GetReactions(req, res) {
+    var db = getDb();
+
+    console.log('GetReactions:' + req.body.id);
+
+    db.collection('location').findOne({ _id: ObjectID(req.params.id) }, function (err, location) {
+        if (err) {
+            res.status(500);
+            return res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else return res.send(location.reactions);
     });
 }
 
@@ -185,7 +262,7 @@ function getGoogleImageandSave(location) {
                             end
                         }
                     }, function (err, result) {
-                        if(err) console.log(err);
+                        if (err) console.log(err);
                         return;
                     })
                 });

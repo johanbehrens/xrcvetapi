@@ -91,7 +91,7 @@ module.exports = (function () {
             var toSend = {
                 username: user.username.toLowerCase(),
                 valid: true,
-                userid: user.id,
+                userid: user._id,
                 clubcode: user.clubcode,
                 usertypeid: user.usertypeid,
                 owner: user.owner,

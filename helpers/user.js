@@ -126,7 +126,8 @@ function locationAggregate(Ids) {
                 date: "$date",
                 start: "$start",
                 imageId: "$imageId",
-                trackId: "$trackId"
+                trackId: "$trackId",
+                reactions: "$reactions"
             },
             minAltitude: { $min: "$locations.altitude" },
             maxAltitude: { $max: "$locations.altitude" },
@@ -149,6 +150,7 @@ function locationAggregate(Ids) {
             riderId: "$_id.riderId",
             raceId: "$_id.raceId",
             riderNumber: "$_id.riderNumber",
+            reactions: "$_id.reactions",
             date: "$_id.date",
             start: "$_id.start",
             imageId: "$_id.imageId",
@@ -191,6 +193,7 @@ function locationAggregate(Ids) {
         $project: {
             locationRideId: 1, userId: 1, username: 1, horseId: 1, riderId: 1, raceId: 1, riderNumber: 1, date: 1, start: 1, end: 1, parkridesTrackId:1,
             name: "$rider.name", surname: "$rider.surname", riderImageId: "$rider.imageId",
+            reactions: "$reactions",
             hname: "$horse.name", horseImageId: "$horse.imageId",
             minAlt: "$minAlt",
             maxAlt: "$maxAlt",
