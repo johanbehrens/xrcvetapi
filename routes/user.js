@@ -83,20 +83,21 @@ function GetAllUsers(req, res) {
     if (!req.query.limit) req.query.limit = 0;
     var db = getDb();
 
-    GetAllFriendIds(req.user._id, doGetAllUsersNotFriends);
+    return GetAllFriendIds(req.user._id, doGetAllUsersNotFriends);
 
     function doGetAllUsersNotFriends(userIds) {
-        db.collection('rider')
+        return db.collection('rider')
             .aggregate(getAggregate(userIds, req.query.filter, parseInt(req.query.skip), parseInt(req.query.limit)))
             .toArray(function (err, users) {
+                console.log(users)
                 if (err) {
                     res.status(500);
-                    res.json({
+                    return res.json({
                         message: err.message,
                         error: err
                     });
                 }
-                else res.send({ skip: parseInt(req.query.skip) + parseInt(req.query.limit), users });
+                else return res.send({ skip: parseInt(req.query.skip) + parseInt(req.query.limit), users });
             });
     };
 
@@ -166,7 +167,6 @@ function getAggregate(userIds, filter, skip, limit) {
             $limit: limit
         }
     ];
-    console.log(t);
     return t;
 }
 

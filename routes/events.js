@@ -9,9 +9,11 @@ const rp = require('request-promise');
 const async = require('async');
 const sites = require('../helpers/sites');
 const user = require('../helpers/user');
+const ObjectId = require("mongodb").ObjectId;
 
 router.post('/', passport.authenticate('jwt', { session: false }), AddEvent);
 router.post('/:id/', passport.authenticate('jwt', { session: false }), AddEventItem);
+router.post('/:id/track/', passport.authenticate('jwt', { session: false }), AddEventLeg);
 
 router.get('/', passport.authenticate('jwt', { session: false }), GetEvents);
 router.get('/:id', GetEvent);
@@ -45,7 +47,7 @@ function ImportEvents(req, res) {
 function GetEvent(req, res) {
     var db = getDb();
 
-    db.collection('event').findOne({ old_id: parseInt(req.params.id) }, function (err, doc) {
+    db.collection('event').findOne({ id: req.params.id, type: req.body.event.type }, function (err, doc) {
         if (err) {
             res.status(500);
             res.json({
@@ -57,9 +59,54 @@ function GetEvent(req, res) {
     });
 }
 
+function AddEventLeg(req, res) {
+    var db = getDb();
+    let newTrack = req.body.track;
+    newTrack.trackId = ObjectId(newTrack.trackId);
+
+    db.collection('event').findOne({ id: req.params.id, type: req.body.event.type }, function (err, event) {
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        if (!event) {
+
+            event = {
+                ...req.body.event,
+                legs: [newTrack]
+            }
+
+            db.collection('event').insertOne(event, function (err, doc) {
+                if (err) {
+                    res.status(500);
+                    res.json({
+                        message: err.message,
+                        error: err
+                    });
+                }
+                else res.send(event);
+            });
+        }
+        else {
+            event.legs.push(newTrack);
+
+            db.collection('event').updateOne(
+                { id: req.params.id, type: req.body.event.type },
+                {
+                    $push: { legs: newTrack }
+                }, function (err, l) {
+                    return res.send(event);
+                });
+        }
+    });
+}
+
 function GetLocalEvents(callback) {
     var db = getDb();
-    
+
     db.collection('event').find({}).toArray(function (err, events) {
         return callback(err, events);
     });
@@ -96,17 +143,17 @@ function GetEvents(req, res) {
     };
 
     req.query.page = parseInt(req.query.page) + 1;
-    if(req.query.filter){
+    if (req.query.filter) {
         functionList = {};
 
         let newfilter = req.query.filter.split(',');
         newfilter.forEach(fil => {
             let t = fil.split(':');
-            if(t[0] == 'ERASA' && t[1] == 'true') functionList['ERASA'] = async.apply(sites.getEvents, 'ERASA');
-            if(t[0] == 'DRASA' && t[1] == 'true') functionList['DRASA'] = async.apply(sites.getEvents, 'DRASA');
-            if(t[0] == 'NAMEF' && t[1] == 'true') functionList['NAMEF'] = async.apply(sites.getEvents, 'NAMEF');
-            if(t[0] == 'PARKRIDES' && t[1] == 'true') functionList['PARKRIDES'] = async.apply(sites.getEvents, 'PARKRIDES');
-            if(t[0] == 'PERSONAL' && t[1] == 'true') functionList['PRIVATE'] = async.apply(user.GetHistory, req.user._id);
+            if (t[0] == 'ERASA' && t[1] == 'true') functionList['ERASA'] = async.apply(sites.getEvents, 'ERASA');
+            if (t[0] == 'DRASA' && t[1] == 'true') functionList['DRASA'] = async.apply(sites.getEvents, 'DRASA');
+            if (t[0] == 'NAMEF' && t[1] == 'true') functionList['NAMEF'] = async.apply(sites.getEvents, 'NAMEF');
+            if (t[0] == 'PARKRIDES' && t[1] == 'true') functionList['PARKRIDES'] = async.apply(sites.getEvents, 'PARKRIDES');
+            if (t[0] == 'PERSONAL' && t[1] == 'true') functionList['PRIVATE'] = async.apply(user.GetHistory, req.user._id);
             functionList['LOCAL'] = GetLocalEvents
         });
     }
@@ -198,7 +245,7 @@ function GetEvents(req, res) {
                 }
 
                 let l = results.LOCAL.find(ev => ev.id == event.id && ev.type == event.type);
-                if(l) event.legs = l.legs;
+                if (l) event.legs = l.legs;
             }
         });
 

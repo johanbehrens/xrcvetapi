@@ -7,6 +7,7 @@ var ObjectID = require('mongodb').ObjectID;
 
 router.post('/', passport.authenticate('jwt', { session: false }), CreateTrack);
 router.get('/:id', GetTrack);
+router.get('/', GetTracks);
 
 function GetTrack(req, res) {
     var db = getDb();
@@ -20,6 +21,21 @@ function GetTrack(req, res) {
             });
         }
         else res.send(track);
+    });
+}
+
+function GetTracks(req, res) {
+    var db = getDb();
+
+    db.collection('track').find({}).project({ locations: 0 }).toArray(function (err, tracks) {
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else res.send(tracks);
     });
 }
 
@@ -53,7 +69,7 @@ function CreateTrack(req, res) {
                         trackId: trackIn.ops[0]._id
                     }
                 }, function (err, d) {
-                    res.send({trackId: trackIn.ops[0]._id});
+                    res.send({ trackId: trackIn.ops[0]._id });
                 });
         });
     });
