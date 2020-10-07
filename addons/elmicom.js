@@ -10,7 +10,7 @@ router.post('/:meterId', AddMeter);
 function ViewMeter(req, res) {
     var db = getDb();
 
-    db.collection('elmicom').find({}).sort({ status: -1 }).toArray(function (err, docs) {
+    db.collection('elmicom').find({}).sort({status:-1,eth:1,wan:1}).toArray(function (err, docs) {
         if (err) {
             res.status(500);
             res.json({
