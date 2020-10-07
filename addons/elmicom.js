@@ -58,10 +58,10 @@ function ViewMeter(req, res) {
               
             <div class="container"><div class="row">`;
             docs.forEach(doc => {
-                html += `<div class="col-sm-4">
+                html += `<div class="col-sm-2">
                             <div class="card text-white bg-${GetCard(doc)} mb-3" style="max-width: 18rem;">
                             <div class="card-header">${doc.meterId}</div>
-                            <div class="card-body">
+                            <div class="card-body p-1">
                                 <h5 class="card-title">Status: ${doc.status}</h5>
                                 <h5 class="card-title">Ethernet: ${doc.eth}</h5>
                                 <h5 class="card-title">WAN: ${doc.wan}</h5>
