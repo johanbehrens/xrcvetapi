@@ -56,7 +56,7 @@ function ViewMeter(req, res) {
               <p>Monitoring</p> 
             </div>
               
-            <div class="container"><div class="row">`;
+            <div class="container-fluid"><div class="row">`;
             docs.forEach(doc => {
                 html += `<div class="col-sm-2">
                             <div class="card text-white bg-${GetCard(doc)} mb-3" style="max-width: 18rem;">

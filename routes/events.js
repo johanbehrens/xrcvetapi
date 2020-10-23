@@ -14,9 +14,13 @@ const ObjectId = require("mongodb").ObjectId;
 router.post('/', passport.authenticate('jwt', { session: false }), AddEvent);
 router.post('/:id/', passport.authenticate('jwt', { session: false }), AddEventItem);
 router.post('/:id/track/', passport.authenticate('jwt', { session: false }), AddEventLeg);
+router.delete('/:id/track/:trackid', passport.authenticate('jwt', { session: false }), RemoveEventLeg);
+
+router.post('/:id/official/', passport.authenticate('jwt', { session: false }), AddEventOfficial);
+router.delete('/:id/official/:officialid', passport.authenticate('jwt', { session: false }), RemoveEventOfficial);
 
 router.get('/', passport.authenticate('jwt', { session: false }), GetEvents);
-router.get('/:id', GetEvent);
+router.get('/:type/:id', GetEvent);
 router.get('/:type/entries/:id', GetEventEntries);
 router.get('/import', passport.authenticate('jwt', { session: false }), ImportEvents);
 
@@ -47,7 +51,60 @@ function ImportEvents(req, res) {
 function GetEvent(req, res) {
     var db = getDb();
 
-    db.collection('event').findOne({ id: req.params.id, type: req.body.event.type }, function (err, doc) {
+    return sites.getEvent(req.params.type, req.params.id, addExtra);
+
+    function addExtra(err, e) {
+        db.collection('event').aggregate([{ $match: { id: req.params.id, type: req.params.type } }, {
+            $lookup: {
+                "from": "users",
+                "localField": "officials",
+                "foreignField": "_id",
+                "as": "officials"
+            }
+        },
+        {
+            $lookup: {
+                "from": "track",
+                "localField": "legs.trackId",
+                "foreignField": "_id",
+                "as": "tracks"
+            }
+        }]).toArray(function (err, doc) {
+
+            if (err) {
+                res.status(500);
+                res.json({
+                    message: err.message,
+                    error: err
+                });
+            }
+            else if (doc.length == 1) {
+                doc = doc[0];
+                if (doc.tracks && doc.tracks.length > 0) {
+                    doc.tracks = doc.tracks.map(track => {
+                        return {
+                            ...track,
+                            leg: doc.legs.find(leg => leg.trackId.toString() == track._id.toString()).leg,
+                            color: doc.legs.find(leg => leg.trackId.toString() == track._id.toString()).color
+                        }
+                    })
+                }
+
+                res.send({
+                    ...e,
+                    ...doc
+                });
+            }
+            else res.send(e);
+        });
+    }
+
+}
+
+function RemoveEventLeg(req, res) {
+    var db = getDb();
+
+    db.collection('event').findOne({ id: req.params.id }, function (err, event) {
         if (err) {
             res.status(500);
             res.json({
@@ -55,7 +112,42 @@ function GetEvent(req, res) {
                 error: err
             });
         }
-        else res.send(doc);
+        if (!event) {
+            return res.send({});
+        }
+        else {
+            event.legs = event.legs.filter(i => i.trackId.toString() !== req.params.trackid);
+
+            db.collection('event').replaceOne(
+                { id: req.params.id }, event, function (err, l) {
+                    return res.send(event);
+                });
+        }
+    });
+}
+
+function RemoveEventOfficial(req, res) {
+    var db = getDb();
+
+    db.collection('event').findOne({ id: req.params.id }, function (err, event) {
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        if (!event) {
+            return res.send({});
+        }
+        else {
+            event.officials = event.officials.filter(i => i.toString() !== req.params.officialid);
+
+            db.collection('event').replaceOne(
+                { id: req.params.id }, event, function (err, l) {
+                    return res.send(event);
+                });
+        }
     });
 }
 
@@ -91,13 +183,59 @@ function AddEventLeg(req, res) {
             });
         }
         else {
-            event.legs.push(newTrack);
+            if (!event.legs) event.legs = [];
+            else {
+                event.legs = event.legs.filter(i => i.trackId.toString() !== newTrack.trackId.toString());
+                event.legs.push(newTrack);
+            }
 
-            db.collection('event').updateOne(
-                { id: req.params.id, type: req.body.event.type },
-                {
-                    $push: { legs: newTrack }
-                }, function (err, l) {
+            db.collection('event').replaceOne(
+                { id: req.params.id, type: req.body.event.type }, event, function (err, l) {
+                    return res.send(event);
+                });
+        }
+    });
+}
+
+function AddEventOfficial(req, res) {
+    var db = getDb();
+    let userId = req.body.userId;
+    userId = ObjectId(userId);
+
+    db.collection('event').findOne({ id: req.params.id, type: req.body.event.type }, function (err, event) {
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        if (!event) {
+            event = {
+                ...req.body.event,
+                officials: [userId]
+            }
+
+            db.collection('event').insertOne(event, function (err, doc) {
+                if (err) {
+                    res.status(500);
+                    res.json({
+                        message: err.message,
+                        error: err
+                    });
+                }
+                else res.send(event);
+            });
+        }
+        else {
+            if (!event.officials) event.officials = [];
+            else {
+                event.officials = event.officials.filter(i => i.toString() !== userId);
+                event.officials.push(userId);
+            }
+
+            db.collection('event').replaceOne(
+                { id: req.params.id, type: req.body.event.type }, event, function (err, l) {
                     return res.send(event);
                 });
         }
