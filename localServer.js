@@ -3,7 +3,7 @@ var ip = require('ip');
 var macaddress = require('macaddress');
 const client = require("mongodb").MongoClient;
 client.connect('mongodb://localhost:27017', connected);
-var SMB2 = require('smb2');
+var SMB2 = require('@marsaud/smb2');
 var Parser = require('node-dbf');
 var XLSX = require('xlsx')
 const fs = require('fs');
@@ -13,12 +13,12 @@ let ipadd = ip.address();
 let state = {
     ip: ipadd,
     timer: 360000,
-    share: '\\\\192.168.0.104\\D',
+    share: '\\\\192.168.0.209\\D',
     username:'XRC',
     password:'xrc',
-    file:'DRASA\\TimekeepingSun\\UIT1BCK0.DBF',
-    type:'DRASA',
-    raceId: "42"
+    file:'Timekeeping\\Saterdag_Soebaters\\UIT1BCK0.DBF',
+    type:'ERASA',
+    raceId: "446"
 };
 let serverIp = 'http://209.97.178.43:3000';
 //let serverIp = 'http://localhost:3000';
@@ -149,7 +149,7 @@ function updateResults() {
     });
     console.log(state.file);
     if (!state.file) {
-        smb2Client.readdir('DRASA\\TimekeepingSun', function (err, files) {
+        smb2Client.readdir('Timekeeping\\Saterdag_Soebaters', function (err, files) {
             console.error('read files');
             if (err) {
                 console.error(err);
@@ -157,6 +157,7 @@ function updateResults() {
             }
             else state.error = 'na';
             state.files = files;
+            console.log(files)
 
             setTimeout(DoStatusUpdate, state.timer, 'funky');
         });
@@ -199,7 +200,7 @@ function gotFile(file) {
         raceid: state.raceId
     }
 //serverIp + "/results/" + state.type + "/" + state.raceId
-    fetch("http://209.97.178.43:3000/results/DRASA/42", {
+    fetch("http://209.97.178.43:3000/results/ERASA/446", {
         headers: {
             'Accept': 'application/json',
             'Content-Type': 'application/json'
@@ -271,9 +272,9 @@ function filter(items) {
             , "HCODE"]
         let returnObj = {};
 
-        if(item.DAYNO == "A003") item.DAYNO = "5869";
-        if(item.DAYNO == "A010") item.DAYNO = "8802";
-        if(item.DAYNO == "A072") item.DAYNO = "294";
+       // if(item.DAYNO == "A003") item.DAYNO = "5869";
+       // if(item.DAYNO == "A010") item.DAYNO = "8802";
+       // if(item.DAYNO == "A072") item.DAYNO = "294";
 
         mapper.forEach(key => {
             returnObj[key] = item[key];
