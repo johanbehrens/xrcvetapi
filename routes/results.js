@@ -115,7 +115,7 @@ function GetLocalServerStatus(req, res) {
 function GetResults(req, res) {
     console.log('GetResults');
 
-    /*
+    
     sites.getResults(req.params.type, req.params.id, done);
 
     function done(err, results) {
@@ -130,8 +130,8 @@ function GetResults(req, res) {
             res.send(results);
         }
     }
-*/
-    
+
+    /*
 var db = getDb();
 
 console.log('GetResults');
@@ -166,6 +166,8 @@ db.collection('location').find({ type: req.params.type, raceId: req.params.id })
         }
     }
 });
+
+*/
 }
 
 function drasaResults(results, raceId, callback) {

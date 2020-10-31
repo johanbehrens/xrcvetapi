@@ -95,6 +95,7 @@ function GetHistory(userId, callback) {
             }
             else {
                 location.map(l => {
+                    l.id = l._id;
                     l.edit = false;
                     l.own = false;
                     if (l.userId.toString() == userId.toString()) {
@@ -212,7 +213,7 @@ function locationAggregate(Ids) {
         }
     }
     ];
-    console.log(t);
+    //console.log(t);
     return t;
 }
 

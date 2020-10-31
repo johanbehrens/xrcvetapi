@@ -21,6 +21,7 @@ const sites = {
         entriesURL: xrcBaseURL + 'entries.php?raceid={{id}}',
         eventsURL: xrcBaseURL + 'events.php',
         eventURL: xrcBaseURL + 'event.php?id={{id}}',
+        officialsURL: xrcBaseURL + 'officials.php?id={{id}}',
     },
     NAMEF: {
         baseURL: xrcNamBaseURL,
@@ -28,6 +29,7 @@ const sites = {
         entriesURL: xrcNamBaseURL + 'entries.php?raceid={{id}}',
         eventsURL: xrcNamBaseURL + 'events.php',
         eventURL: xrcNamBaseURL + 'event.php?id={{id}}',
+        officialsURL: xrcNamBaseURL + 'officials.php?id={{id}}',
     },
     DRASA: {
         baseURL: drasaBaseURL,
@@ -35,6 +37,7 @@ const sites = {
         entriesURL: drasaBaseURL + 'entries.php?raceid={{id}}',
         eventsURL: drasaBaseURL + 'events.php',
         eventURL: drasaBaseURL + 'event.php?id={{id}}',
+        officialsURL: drasaBaseURL + 'officials.php?id={{id}}',
     },
     PARKRIDES: {
         baseURL: parkRidesBaseURL,
@@ -42,6 +45,7 @@ const sites = {
         entriesURL: parkRidesBaseURL + 'events/m/{{id}}/entries',
         eventsURL: parkRidesBaseURL + 'events/m/',
         eventURL: parkRidesBaseURL + 'events/m/{{id}}',
+        officialsURL: parkRidesBaseURL + 'events/m/officials',
     }
 }
 
@@ -65,6 +69,14 @@ function getEvent(type, eventid, callback) {
     if (!sites[type]) return callback('Type does not exist');
 
     let url = mustache.render(sites[type].eventURL, { id: eventid });
+
+    GET(url, callback);
+}
+
+function getOfficials(type, eventid, callback) {
+    if (!sites[type]) return callback('Type does not exist');
+
+    let url = mustache.render(sites[type].officialsURL, { id: eventid });
 
     GET(url, callback);
 }
@@ -101,5 +113,6 @@ module.exports = {
     getResults,
     getEvents,
     getEvent,
-    getEntries
+    getEntries,
+    getOfficials
 }

@@ -176,6 +176,8 @@ function updateResults() {
 
         }
         else
+        {
+            console.log('smb2Client.readFile')
             smb2Client.readFile(state.file, function (err, file) {
                 if (err) {
                     console.error(err);
@@ -184,16 +186,20 @@ function updateResults() {
                     return;
                 }
                 else state.error = 'na';
+                console.log('calling gotFile')
                 gotFile(file);
             });
+        }
     }
 
     console.log('updateResults')
 }
 
 function gotFile(file) {
+    console.log('got file');
     var workbook = XLSX.read(file, { type: 'buffer' });
-    
+    console.log(workbook.SheetNames);
+
     var body = {
         items: filter(XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]])),
         stamp: new Date(),

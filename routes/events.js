@@ -13,14 +13,19 @@ const ObjectId = require("mongodb").ObjectId;
 
 router.post('/', passport.authenticate('jwt', { session: false }), AddEvent);
 router.post('/:id/', passport.authenticate('jwt', { session: false }), AddEventItem);
-router.post('/:id/track/', passport.authenticate('jwt', { session: false }), AddEventLeg);
-router.delete('/:id/track/:trackid', passport.authenticate('jwt', { session: false }), RemoveEventLeg);
 
-router.post('/:id/official/', passport.authenticate('jwt', { session: false }), AddEventOfficial);
-router.delete('/:id/official/:officialid', passport.authenticate('jwt', { session: false }), RemoveEventOfficial);
+router.post('/:type/:id/track/', passport.authenticate('jwt', { session: false }), AddEventLeg);
+router.delete('/:type/:id/track/:trackid', passport.authenticate('jwt', { session: false }), RemoveEventLeg);
+
+router.post('/:type/:id/official/', passport.authenticate('jwt', { session: false }), AddEventOfficial);
+router.delete('/:type/:id/official/:officialid', passport.authenticate('jwt', { session: false }), RemoveEventOfficial);
 
 router.get('/', passport.authenticate('jwt', { session: false }), GetEvents);
 router.get('/:type/:id', GetEvent);
+router.get('/:type/liveUpdates/:id', getLocations);
+router.get('/:type/tracks/:id', getTracks);
+router.get('/:type/officials/:id', getOfficials);
+router.get('/:type/officialCard/:id', getOfficialCard);
 router.get('/:type/entries/:id', GetEventEntries);
 router.get('/import', passport.authenticate('jwt', { session: false }), ImportEvents);
 
@@ -46,6 +51,94 @@ function ImportEvents(req, res) {
         }).catch(function (err) {
             res.send(err);
         });
+}
+
+function getLocations(req, res) {
+    var db = getDb();
+
+    console.log('getLocations');
+    db.collection('location').aggregate(userLocationsAggregate(req.params.id, req.params.type)).toArray(function (err, locations) {
+        console.log('return getLocations');
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else {
+            res.send(locations);
+        }
+    });
+}
+
+function getOfficials(req, res) {
+    var db = getDb();
+
+    db.collection('event').aggregate([{ $match: { id: req.params.id, type: req.params.type } }, {
+        $lookup: {
+            "from": "users",
+            "localField": "officials",
+            "foreignField": "_id",
+            "as": "officials"
+        }
+    }]).toArray(function (err, doc) {
+
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else if (doc.length == 1) {
+            doc = doc[0];
+            if (doc.officials && doc.officials.length > 0) {
+                return res.send(doc.officials);
+            }
+
+            return res.send([]);
+        }
+        else return res.send([]);
+    });
+}
+
+function getTracks(req, res) {
+    var db = getDb();
+
+    db.collection('event').aggregate([{ $match: { id: req.params.id, type: req.params.type } }, {
+        $lookup: {
+            "from": "track",
+            "localField": "legs.trackId",
+            "foreignField": "_id",
+            "as": "tracks"
+        }
+    }]).toArray(function (err, doc) {
+
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else if (doc.length == 1) {
+            doc = doc[0];
+            if (doc.tracks && doc.tracks.length > 0) {
+                doc.tracks = doc.tracks.map(track => {
+                    return {
+                        ...track,
+                        leg: doc.legs.find(leg => leg.trackId.toString() == track._id.toString()).leg,
+                        color: doc.legs.find(leg => leg.trackId.toString() == track._id.toString()).color
+                    }
+                });
+                return res.send(doc.tracks);
+            }
+
+            return res.send([]);
+        }
+        else return res.send([]);
+    });
 }
 
 function GetEvent(req, res) {
@@ -98,13 +191,12 @@ function GetEvent(req, res) {
             else res.send(e);
         });
     }
-
 }
 
 function RemoveEventLeg(req, res) {
     var db = getDb();
 
-    db.collection('event').findOne({ id: req.params.id }, function (err, event) {
+    db.collection('event').findOne({ id: req.params.id, type: req.params.type }, function (err, event) {
         if (err) {
             res.status(500);
             res.json({
@@ -119,7 +211,7 @@ function RemoveEventLeg(req, res) {
             event.legs = event.legs.filter(i => i.trackId.toString() !== req.params.trackid);
 
             db.collection('event').replaceOne(
-                { id: req.params.id }, event, function (err, l) {
+                { id: req.params.id, type: req.params.type }, event, function (err, l) {
                     return res.send(event);
                 });
         }
@@ -129,7 +221,7 @@ function RemoveEventLeg(req, res) {
 function RemoveEventOfficial(req, res) {
     var db = getDb();
 
-    db.collection('event').findOne({ id: req.params.id }, function (err, event) {
+    db.collection('event').findOne({ id: req.params.id, type: req.params.type }, function (err, event) {
         if (err) {
             res.status(500);
             res.json({
@@ -145,7 +237,7 @@ function RemoveEventOfficial(req, res) {
 
             db.collection('event').replaceOne(
                 { id: req.params.id }, event, function (err, l) {
-                    return res.send(event);
+                    return res.send({});
                 });
         }
     });
@@ -156,7 +248,7 @@ function AddEventLeg(req, res) {
     let newTrack = req.body.track;
     newTrack.trackId = ObjectId(newTrack.trackId);
 
-    db.collection('event').findOne({ id: req.params.id, type: req.body.event.type }, function (err, event) {
+    db.collection('event').findOne({ id: req.params.id, type: req.params.type }, function (err, event) {
         if (err) {
             res.status(500);
             res.json({
@@ -167,7 +259,8 @@ function AddEventLeg(req, res) {
         if (!event) {
 
             event = {
-                ...req.body.event,
+                id: req.params.id,
+                type: req.params.type,
                 legs: [newTrack]
             }
 
@@ -190,7 +283,7 @@ function AddEventLeg(req, res) {
             }
 
             db.collection('event').replaceOne(
-                { id: req.params.id, type: req.body.event.type }, event, function (err, l) {
+                { id: req.params.id, type: req.params.type }, event, function (err, l) {
                     return res.send(event);
                 });
         }
@@ -202,7 +295,7 @@ function AddEventOfficial(req, res) {
     let userId = req.body.userId;
     userId = ObjectId(userId);
 
-    db.collection('event').findOne({ id: req.params.id, type: req.body.event.type }, function (err, event) {
+    db.collection('event').findOne({ id: req.params.id, type: req.params.type }, function (err, event) {
         if (err) {
             res.status(500);
             res.json({
@@ -212,7 +305,8 @@ function AddEventOfficial(req, res) {
         }
         if (!event) {
             event = {
-                ...req.body.event,
+                id: req.params.id,
+                type: req.params.type,
                 officials: [userId]
             }
 
@@ -235,7 +329,7 @@ function AddEventOfficial(req, res) {
             }
 
             db.collection('event').replaceOne(
-                { id: req.params.id, type: req.body.event.type }, event, function (err, l) {
+                { id: req.params.id, type: req.params.type }, event, function (err, l) {
                     return res.send(event);
                 });
         }
@@ -254,6 +348,25 @@ function GetEventEntries(req, res) {
     console.log('GetEventEntries');
 
     sites.getEntries(req.params.type, req.params.id, done);
+
+    function done(err, results) {
+        if (err) {
+            res.status(500);
+            res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else {
+            res.send(results);
+        }
+    }
+}
+
+function getOfficialCard(req, res) {
+    console.log('getOfficials');
+
+    sites.getOfficials(req.params.type, req.params.id, done);
 
     function done(err, results) {
         if (err) {
@@ -425,6 +538,73 @@ function AddEventItem(req, res) {
         }
         else res.send(doc);
     });
+}
+
+function userLocationsAggregate(raceId, type) {
+    return [{
+        $match: {
+            raceId,
+            type
+        }
+    }, {
+        $lookup: {
+            "from": "rider",
+            "localField": "riderId",
+            "foreignField": "_id",
+            "as": "rider"
+        }
+    }, {
+        $project: {
+            rider: 1,
+            locations: { $slice: ["$locations", -3] },
+            raceId: 1,
+            riderNumber: 1,
+            type: 1,
+            AVE_SPD: 1,
+            CALLNAME: 1,
+            CAT: 1,
+            DAYNO: 1,
+            DISQ: 1,
+            DIST: 1,
+            FNAME: 1,
+            HCODE: 1,
+            HNAME: 1,
+            MCODE: 1,
+            PULSE1: 1,
+            PULSE2: 1,
+            PULSE3: 1,
+            PULSE4: 1,
+            PULSE5: 1,
+            PULSE6: 1,
+            REASON: 1,
+            R_TIME1: 1,
+            R_TIME2: 1,
+            R_TIME3: 1,
+            R_TIME4: 1,
+            R_TIME5: 1,
+            R_TIME6: 1,
+            SLIP1: 1,
+            SLIP2: 1,
+            SLIP3: 1,
+            SLIP4: 1,
+            SLIP5: 1,
+            SLIP6: 1,
+            TIME1: 1,
+            TIME10: 1,
+            TIME11: 1,
+            TIME12: 1,
+            TIME2: 1,
+            TIME3: 1,
+            TIME4: 1,
+            TIME5: 1,
+            TIME6: 1,
+            TIME7: 1,
+            TIME8: 1,
+            TIME9: 1,
+            TOTSLIP: 1,
+            TOT_TIME: 1,
+        }
+    }];
 }
 
 

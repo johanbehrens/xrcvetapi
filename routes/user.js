@@ -11,6 +11,7 @@ router.get('/', GetUser);
 router.get('/all', GetAllUsersExceptFriends);
 router.get('/allInclude', GetAllUsers);
 router.post('/', UpdateUser);
+router.post('/filter', UpdateUserFilter);
 router.post('/linkParkRides', LinkParkRides);
 router.post('/getParkRideHorses', GetParkRideHorses);
 
@@ -130,6 +131,17 @@ function UpdateUser(req, res) {
     var db = getDb();
 
     db.collection('users').updateOne({ _id: req.user._id }, { $set: { firebaseToken: req.body.firebaseToken, lastLogin: new Date(), logins: req.user.logins ? 1 : req.user.logins + 1 } }, function (err, user) {
+        if (err) {
+            console.log(err);
+        }
+        res.send(user);
+    });
+}
+
+function UpdateUserFilter(req, res) {
+    var db = getDb();
+
+    db.collection('users').updateOne({ _id: req.user._id }, { $set: { filter: req.body.filter } }, function (err, user) {
         if (err) {
             console.log(err);
         }
