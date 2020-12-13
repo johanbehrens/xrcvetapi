@@ -28,6 +28,7 @@ router.get('/:type/officials/:id', getOfficials);
 router.get('/:type/officialCard/:id', getOfficialCard);
 router.get('/:type/entries/:id', GetEventEntries);
 router.get('/import', passport.authenticate('jwt', { session: false }), ImportEvents);
+router.get('/public', GetPublicEvents);
 
 function ImportEvents(req, res) {
     fetch('http://xrc.co.za/Objects/ride_func.php', {
@@ -379,6 +380,110 @@ function getOfficialCard(req, res) {
         else {
             res.send(results);
         }
+    }
+}
+
+function GetPublicEvents(req, res) {
+
+    let functionList = {
+        ERASA: async.apply(sites.getEvents, 'ERASA'),
+        DRASA: async.apply(sites.getEvents, 'DRASA'),
+        NAMEF: async.apply(sites.getEvents, 'NAMEF'),
+        PARKRIDES: async.apply(sites.getEvents, 'PARKRIDES'),
+        LOCAL: GetLocalEvents
+    };
+
+    req.query.page = parseInt(req.query.page) + 1;
+
+    let start = 0;
+    let end = req.query.page * 20;
+    if (end > 0) {
+        start = end - 20;
+    }
+    else {
+        end = 20;
+    }
+    console.log('GetPublicEvents', start, end);
+
+    async.parallel(functionList, formatData);
+
+    function formatData(err, results) {
+        if (err) {
+            console.log(err);
+            return res.json(results);
+        }
+        var list = [];
+
+        if (results['ERASA']) list = [...results['ERASA']];
+        if (results['DRASA']) list = [...list, ...results['DRASA']];
+        if (results['PARKRIDES']) list = [...list, ...results['PARKRIDES']];
+        if (results['NAMEF']) list = [...list, ...results['NAMEF']];
+
+        list = list.sort(function (a, b) {
+            let aStart = moment(a.end);
+            let bStart = moment(b.end);
+
+            if (aStart > bStart) return -1;
+            else if (bStart > aStart) return 1;
+            else return 0;
+        });
+
+        list = list.slice(start, end);
+        let counter = start;
+        list = list.map(function (item) {
+            item.newId = counter++;
+            return item;
+        });
+
+        let rest = [];
+        let live = [];
+        let upcoming = [];
+        let active = [];
+
+        list.forEach(event => {
+            if (event) {
+                let deventDate = new Date(event.start);
+                let eventDate = deventDate.toISOString().split('T')[0];
+
+                let dendDate = new Date(event.end);
+                let endDate = dendDate.toISOString().split('T')[0];
+
+                let dtoday = new Date();
+                let today = dtoday.toISOString().split('T')[0];
+
+                if (eventDate != endDate && deventDate <= dtoday && dtoday <= dendDate) {
+                    event._active = true;
+                    event._text = 'ACTIVE';
+                    active.push(event);
+                }
+                else if (eventDate == today) {
+                    event._live = true;
+                    event._text = 'LIVE';
+                    live.push(event);
+                }
+                else if (new Date(event.start) < new Date()) {
+                    event._result = true;
+                    event._text = 'LIVE';
+                    rest.push(event);
+                    if (event.hasResults == '1') event._text = 'RESULTS';
+                    else event._text = 'RESULTS PENDING';
+                }
+                else {
+                    event._upcoming = true;
+                    upcoming.push(event);
+                    if (event.isClosed == '0') event._text = 'ENTER NOW';
+                    else event._text = 'ENTRIES CLOSED';
+                }
+
+                let l = results.LOCAL.find(ev => ev.id == event.id && ev.type == event.type);
+                if (l) event.legs = l.legs;
+            }
+        });
+
+        list = [...live, ...active, ...upcoming, ...rest];
+
+        return res.json(list);
+
     }
 }
 

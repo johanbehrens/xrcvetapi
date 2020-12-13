@@ -10,7 +10,27 @@ require('../config/passport')(passport);
 router.get('/:type/:id', GetResults);
 router.post('/:type/search', SearchResults);
 router.post('/:type/:id', AddLiveResults);
+router.post('/:type/:id/:dayno', UpdateLiveResults);
 router.post('/status', GetLocalServerStatus);
+
+function UpdateLiveResults(req, res) {
+    console.log('UpdateLiveResults');
+
+    let type = req.params.type;
+    let raceId = req.params.id;
+    let riderNumber = req.params.dayno;
+
+    db.collection('location').updateOne(
+        { type, raceId, riderNumber },
+        {
+            $set: {
+                ...item
+            }
+        },
+        { upsert: true }, function (err, result) {
+            res.send(result);
+        });
+}
 
 function AddLiveResults(req, res) {
     var db = getDb();
@@ -115,7 +135,7 @@ function GetLocalServerStatus(req, res) {
 function GetResults(req, res) {
     console.log('GetResults');
 
-    
+
     sites.getResults(req.params.type, req.params.id, done);
 
     function done(err, results) {
