@@ -31,7 +31,7 @@ schedule.scheduleJob("0 */30 * * * *", function () {
             }
 
             docs.forEach(function (host) {
-                ping.sys.probe(host.IPWAN, function (isAlive) {
+                ping.sys.probe(host.IPWAN.split('/')[0], function (isAlive) {
                     if (isAlive) {
                         console.log('host ' + host.meterId + ' is alive');
                         if (host.wan == 'down') {
