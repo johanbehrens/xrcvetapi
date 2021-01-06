@@ -34,11 +34,7 @@ schedule.scheduleJob("0 */30 * * * *", function () {
                 ping.sys.probe(host.IPWAN.split('/')[0], function (isAlive) {
                     if (isAlive) {
                         console.log('host ' + host.meterId + ' is alive');
-                        if (host.wan == 'down') {
-                            users.forEach(function (user) {
-                                sendPush(new ObjectID(user.token), host.meterId, 'WAN Connection', 'UP');
-                            });
-                        }
+                        
                         db.collection('elmicom').updateOne(
                             { meterId: host.meterId },
                             {
@@ -49,18 +45,22 @@ schedule.scheduleJob("0 */30 * * * *", function () {
                                 }
                             },
                             { upsert: true }, function (err, result) {
+                                console.log(host.meterId, result.modifiedCount);
                                 if (err) {
                                     console.log(err);
+                                }
+                                else{
+                                    if (host.wan == 'down') {
+                                        users.forEach(function (user) {
+                                            sendPush(new ObjectID(user.token), host.meterId, 'WAN Connection', 'UP');
+                                        });
+                                    }
                                 }
                             });
                     }
                     else {
                         console.log('host ' + host.meterId + ' is dead');
-                        if (host.wan == 'up') {
-                            users.forEach(function (user) {
-                                sendPush(new ObjectID(user.token), host.meterId, 'WAN Connection', 'Down');
-                            });
-                        }
+                       
                         db.collection('elmicom').updateOne(
                             { meterId: host.meterId },
                             {
@@ -71,8 +71,16 @@ schedule.scheduleJob("0 */30 * * * *", function () {
                                 }
                             },
                             { upsert: true }, function (err, result) {
+                                console.log(host.meterId, result.modifiedCount);
                                 if (err) {
                                     console.log(err);
+                                }
+                                else {
+                                    if (host.wan == 'up') {
+                                        users.forEach(function (user) {
+                                            sendPush(new ObjectID(user.token), host.meterId, 'WAN Connection', 'Down');
+                                        });
+                                    }
                                 }
                             });
                     }
