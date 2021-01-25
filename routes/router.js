@@ -106,7 +106,7 @@ module.exports = (function () {
         return res.send(t);
     }
 
-    function sendToken(user, res, isWeb) {
+    function sendToken(user, res, isWeb, appleId) {
         var token = jwt.encode({ "id": user.username }, config.secret);
         var response = {
             token: 'JWT ' + token,
@@ -116,6 +116,7 @@ module.exports = (function () {
 
         var set = { lastLogin: new Date() };
         if (isWeb) set = { lastWebLogin: new Date() };
+        if (appleId) set = { appleId };
 
         var db = getDb();
         db.collection('users').updateOne({ username: user.username }, { $set: set }, function (err, user) {
@@ -220,6 +221,91 @@ module.exports = (function () {
         return re.test(email);
     }
 
+    function getAppleUser(token, req, res) {
+        console.log(req.body);
+
+        let match = {}
+
+        if (req.body.appleEmail) {
+            match = { emailaddress: req.body.appleEmail };
+            console.log('Apple first login: ', req.body.appleEmail)
+        }
+        else {
+            match = { appleId: token };
+        }
+
+        var db = getDb();
+        db.collection('users').findOne(match, function (err, user) {
+            if (err) {
+                res.status(500);
+                res.json({
+                    message: err.message,
+                    error: err
+                });
+            }
+            if (user) {
+                return sendToken(user, res, null, token);
+            }
+            else { //get user from xrc
+                ImportUser(req.body.appleEmail, function (err, user) {
+                    if (err) {
+                        if (err) {
+                            res.status(500);
+                            res.json({
+                                message: err.message,
+                                error: err
+                            });
+                        }
+                    }
+
+                    if (user) {
+                        user.appleId = token;
+                        db.collection('users').insertOne(user, function (err, newUser) {
+                            if (err) {
+                                res.status(500);
+                                res.json({
+                                    message: err.message,
+                                    error: err
+                                });
+                            }
+
+                            CheckFriendRequest(req.body.appleEmail, newUser.ops[0]._id, doAuth);
+                            function doAuth() {
+                                db.collection('rider').insertOne({ default: true, name: user.name, surname: user.surname, userId: newUser.ops[0]._id }, function (err, rider) {
+                                    return sendToken(user, res);
+                                });
+                            }
+                        });
+                    }
+                    else {
+                        let user = {
+                            name: '',
+                            username: req.body.appleEmail,
+                            emailaddress: req.body.appleEmail,
+                            appleId: token,
+                            isActive: 1
+                        };
+                        db.collection('users').insertOne(user, function (err, newUser) {
+                            if (err) {
+                                res.status(500);
+                                res.json({
+                                    message: err.message,
+                                    error: err
+                                });
+                            }
+                            CheckFriendRequest(user.emailaddress, newUser.ops[0]._id, doAuth);
+                            function doAuth() {
+                                db.collection('rider').insertOne({ default: true, name: user.name, surname: user.surname, userId: newUser.ops[0]._id }, function (err, rider) {
+                                    return sendToken(user, res);
+                                });
+                            }
+                        });
+                    }
+                });
+            }
+        });
+    }
+
     function getFacebookUser(token, req, res) {
         fetch("https://graph.facebook.com/v2.5/me?fields=id,name,email,first_name,last_name&access_token=" + token, {
             headers: {
@@ -252,7 +338,7 @@ module.exports = (function () {
                     }
                     else { //get user from xrc
                         ImportUser(femail, function (err, user) {
-                            if(err){
+                            if (err) {
                                 if (err) {
                                     res.status(500);
                                     res.json({
@@ -355,7 +441,7 @@ module.exports = (function () {
                         error: err
                     });
                 }
-                else if(resetPair) {
+                else if (resetPair) {
                     return db.collection('users').findOne({ username: req.body.username }, function (err, user) {
                         if (err) {
                             res.status(500);
@@ -386,6 +472,9 @@ module.exports = (function () {
                 }
                 else return res.json({ 'error': 'Token not found' });
             });
+        }
+        else if (req.body && req.body.appleToken) {
+            getAppleUser(req.body.appleToken, req, res);
         }
         else if (req.body && req.body.ftoken) {
             getFacebookUser(req.body.ftoken, req, res);

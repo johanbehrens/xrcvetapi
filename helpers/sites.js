@@ -45,7 +45,7 @@ const sites = {
         entriesURL: parkRidesBaseURL + 'events/m/{{id}}/entries',
         eventsURL: parkRidesBaseURL + 'events/m/',
         eventURL: parkRidesBaseURL + 'events/m/{{id}}',
-        officialsURL: parkRidesBaseURL + 'events/m/officials',
+        officialsURL: parkRidesBaseURL + 'events/m/{{id}}/official',
     }
 }
 
