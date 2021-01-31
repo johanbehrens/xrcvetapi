@@ -53,7 +53,13 @@
             "type": "node",
             "request": "launch",
             "name": "test",
-            "program": "${workspaceFolder}/test.js"
+            "program": "${workspaceFolder}/scheduler.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "worker",
+            "program": "${workspaceFolder}/worker.js"
         }
     ]
 }
