@@ -165,7 +165,7 @@ module.exports = (function () {
 
                 let user = {
                     ...req.body,
-                    isActive: '0',
+                    isActive: '1',
                     isApproved: '1',
                     rank: getRank('2'),
                     usertypeid: '2'
