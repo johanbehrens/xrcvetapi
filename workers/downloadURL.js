@@ -4,7 +4,7 @@ function Download(params, data, callback) {
     fetch(params.url)
         .then(res => res.json())
         .then(json => {
-            console.log(json);
+            //console.log(json);
             data.payload = json;
 
             if (params.lineItemDescription) {

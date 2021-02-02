@@ -6,6 +6,7 @@ const Functions = {
     downloadURL: require('./downloadURL').Download,
     toCustomXLS: require('./toCustomXLS').ToXLS,
     generateInvoice: require('./generateInvoice').Generate,
+    birthday: require('./birthday').Generate,
 };
 
 const Validations = {
