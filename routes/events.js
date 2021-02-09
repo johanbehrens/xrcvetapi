@@ -573,6 +573,7 @@ function GetEvents(req, res) {
                 let dtoday = new Date();
                 let today = dtoday.toISOString().split('T')[0];
 
+                
                 let dendDate = new Date(event.end);
 
                 if (event.type != 'PERSONAL' && eventDate != dendDate.toISOString().split('T')[0] && deventDate <= dtoday && dtoday <= dendDate.toISOString().split('T')[0]) {
