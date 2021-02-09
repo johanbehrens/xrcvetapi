@@ -108,24 +108,44 @@ module.exports = (function () {
 
     function sendToken(user, res, isWeb, appleId) {
         var token = jwt.encode({ "id": user.username }, config.secret);
-        var response = {
-            token: 'JWT ' + token,
-            ...user,
-            rank: getRank(user.usertypeid),
-        };
-
-        var set = { lastLogin: new Date() };
-        if (isWeb) set = { lastWebLogin: new Date() };
-        if (appleId) set = { appleId };
-
         var db = getDb();
-        db.collection('users').updateOne({ username: user.username }, { $set: set }, function (err, user) {
+
+        db.collection('users').findOne({ emailaddress: user.username }, function (err, client) {
             if (err) {
-                console.log(err);
-                return res.send(response);
+                return res.json({ 'error': 'something went wrong' });
             }
-            else return res.send(response);
-        });
+            if (client) {
+
+                user.valid = false;
+                if (client.currentSubscription) {
+                    var today = new Date();
+                    //today.setHours(today.getHours() - 2);
+                    if (client.currentSubscription.expires_date) user.valid = client.currentSubscription.expires_date > today;
+                    else user.valid = client.currentSubscription.end_date > today;
+                }
+                var response = {
+                    token: 'JWT ' + token,
+                    ...user,
+                    rank: getRank(user.usertypeid),
+                };
+
+                var set = { lastLogin: new Date() };
+                if (isWeb) set = { lastWebLogin: new Date() };
+                if (appleId) set = { appleId };
+
+
+                db.collection('users').updateOne({ username: user.username }, { $set: set }, function (err, user) {
+                    if (err) {
+                        console.log(err);
+                        return res.send(response);
+                    }
+                    else return res.send(response);
+                });
+
+            } else {
+                return res.json({ 'error': 'something went wrong' });
+            }
+        })
     }
 
     function Register(req, res) {
@@ -217,7 +237,7 @@ module.exports = (function () {
     }
 
     function validateEmail(email) {
-        if(email === 'iosTest') return true;
+        if (email === 'iosTest') return true;
         var re = /^(([^<>()[\]\\.,;:\s@\"]+(\.[^<>()[\]\\.,;:\s@\"]+)*)|(\".+\"))@((\[[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\.[0-9]{1,3}\])|(([a-zA-Z\-0-9]+\.)+[a-zA-Z]{2,}))$/;
         return re.test(email);
     }

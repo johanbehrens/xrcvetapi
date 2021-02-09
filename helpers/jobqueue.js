@@ -68,13 +68,18 @@ function sendEmail(email, callback) {
     queue.enqueue('sendEmail', email, options, callback);
 }
 
-function enqueueJob({ jobName, data, priority }, callback) {
+function enqueueJob({ jobName, data, priority, date }, callback) {
     const options = {
         attempts: {
             count: 1
         },
         priority: priority ? priority : 0
     };
+
+    if(date) {
+        options.delay = new Date(date);
+    }
+
     if (!_client) {
         _initialise();
     }

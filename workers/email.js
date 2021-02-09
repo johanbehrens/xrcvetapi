@@ -1,5 +1,5 @@
 nodeMailer = require('nodemailer')
-const config = require("../config/app-config.json");
+const config = require("../config/database.js");
 const fs = require('fs');
 
 function SendEmail(params, data, mainCallback) {

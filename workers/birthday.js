@@ -3,7 +3,7 @@ var moment = require('moment');
 const async = require('async');
 const fs = require('fs');
 const fetch = require('node-fetch');
-const config = require("../config/app-config.json");
+const config = require("../config/database.js");
 nodeMailer = require('nodemailer')
 
 function Generate(params, data, callback) {

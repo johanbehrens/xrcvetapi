@@ -1,5 +1,5 @@
 const { Surveil } = require("../helpers/surveil");
-const config = require("../config/app-config.json");
+const config = require("../config/database.js");
 
 function Log(params, data, callback) {
     var surveil = new Surveil(config.surveil_username, config.surveil_password, params.resourceId);

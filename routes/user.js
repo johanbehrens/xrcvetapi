@@ -16,23 +16,9 @@ router.post('/linkParkRides', LinkParkRides);
 router.post('/getParkRideHorses', GetParkRideHorses);
 
 function GetUser(req, res) {
-    var db = getDb();
-    db.collection('users').findOne({ _id: req.user._id }, function (err, user) {
-        if (err) {
-            res.status(500);
-            res.json({
-                message: err.message,
-                error: err
-            });
-        }
-        else {
-            let response = { valid: false };
-            if (user.currentSubscription) {
-                var today = new Date();
-                response.valid = user.currentSubscription.expires_date > today;
-            }
-            res.send(response);
-        }
+    res.send({
+        valid: req.user.valid,
+        currentSubscription: req.user.currentSubscription,
     });
 }
 

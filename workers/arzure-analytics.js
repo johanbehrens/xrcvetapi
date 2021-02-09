@@ -1,5 +1,5 @@
 const { Azure } = require("../helpers/azure");
-const config = require("../config/app-config.json");
+const config = require("../config/database");
 
 function DoWork(params, data, callback) {
     var failedRules = Validate(params);

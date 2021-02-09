@@ -46,8 +46,8 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "Local Server",
-            "program": "${workspaceFolder}/localServerscan.js"
+            "name": "IAP Test",
+            "program": "${workspaceFolder}/test.js"
         },
         {
             "type": "node",

@@ -7,6 +7,7 @@ const Functions = {
     toCustomXLS: require('./toCustomXLS').ToXLS,
     generateInvoice: require('./generateInvoice').Generate,
     birthday: require('./birthday').Generate,
+    validateSubscription: require('./validateSubscription').Validate,
 };
 
 const Validations = {

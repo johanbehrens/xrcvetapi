@@ -6,7 +6,8 @@ const jobQueue = require('./jobqueue');
 const jobFunctions = {
     sendPushNotification: require('./notification').SendNotification,
     sendEmail: require('./email').SendNotification,
-    workflow: require('../workers/workflow').Workflow
+    workflow: require('../workers/workflow').Workflow,
+    validateSubscription: require('../workers/validateSubscription').Validate
 };
 
 const _logInfoForJob = (workerId, action, job) => {

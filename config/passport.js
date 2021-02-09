@@ -19,7 +19,8 @@ module.exports = function(passport) {
                 if(client.currentSubscription) {
                     var today = new Date();
                     //today.setHours(today.getHours() - 2);
-                    client.valid = client.currentSubscription.expires_date > today;
+                    if(client.currentSubscription.expires_date) client.valid = client.currentSubscription.expires_date > today;
+                    else client.valid = client.currentSubscription.end_date > today;
                 }
 
                 done(null, client);

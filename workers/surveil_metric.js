@@ -1,5 +1,5 @@
 const { Surveil } = require("../helpers/surveil");
-const config = require("../config/app-config.json");
+const config = require("../config/database.js");
 
 function Metric(params, data, callback) {
     var failedRules = Validate(params);
