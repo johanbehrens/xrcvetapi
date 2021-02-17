@@ -1,25 +1,81 @@
 var express = require('express');
 var router = express.Router();
 const getDb = require("../db").getDb;
-var passport	= require('passport');
+var passport = require('passport');
 require('../config/passport')(passport);
 var ObjectID = require('mongodb').ObjectID;
-var {GetUserIds} = require('../helpers/user');
+var { GetUserIds } = require('../helpers/user');
+const async = require('async');
 
 router.post('/', AddHorse);
 router.get('/', GetHorses);
+router.get('/:id/summary', GetHorseSummary);
 router.get('/:id', GetHorse);
+const sites = require('../helpers/sites');
 
-function GetHorse(req, res) {
+function GetHorseSummary(req, res) {
+    console.log('GetHorseSummary');
     var db = getDb();
 
-    db.collection('horse').findOne({_id: parseInt(req.params.id)}, function(err, horse){
-        if(err) {
+    return db.collection('horse').findOne({ _id: ObjectID(req.params.id) }, function (err, horse) {
+        if (err) {
+            res.status(500);
+            return res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else {
+            if (horse) {
+                let functionList = {}
+
+                if (horse.erasa) functionList['ERASA'] = async.apply(sites.getHorseSummary, 'ERASA', horse.erasa);
+                if (horse.drasa) functionList['DRASA'] = async.apply(sites.getHorseSummary, 'DRASA', horse.drasa);
+                if (horse.namef) functionList['NAMEF'] = async.apply(sites.getHorseSummary, 'NAMEF', horse.namef);
+
+                return async.parallel(functionList, formatData);
+
+                function formatData(err, results) {
+                    if (err) {
+                        console.log(err);
+                        return res.json(results);
+                    }
+                    else {
+                        let ret = []
+                        Object.keys(results).forEach((key) => {
+
+                            let i ={};
+
+                            results[key].map((item,index) => {
+                                i[item.title]= item.value;
+                            });
+
+                            ret.push({
+                                items: i,
+                                key
+                            })
+                        });
+
+                        res.send(ret);
+                    }
+                };
+            }
+
+        }
+    });
+}
+
+function GetHorse(req, res) {
+    console.log('GetHorse');
+    var db = getDb();
+
+    db.collection('horse').findOne({ _id: parseInt(req.params.id) }, function (err, horse) {
+        if (err) {
             res.status(500);
             res.json({
                 message: err.message,
                 error: err
-                });
+            });
         }
         else {
             if (horse) {
@@ -63,27 +119,27 @@ function AddHorse(req, res) {
     req.body._id = new ObjectID(req.body._id);
     req.body.userId = req.user._id;
 
-    db.collection('horse').findOne({_id: req.body._id}, function(err, horse){
-        if(err) {
+    db.collection('horse').findOne({ _id: req.body._id }, function (err, horse) {
+        if (err) {
             res.status(500);
             res.json({
                 message: err.message,
                 error: err
-                });
+            });
         }
         else {
-            if(!horse){
-                db.collection('horse').insertOne(req.body, function(err, horse){
+            if (!horse) {
+                db.collection('horse').insertOne(req.body, function (err, horse) {
                     res.send(horse.ops[0]);
                 })
             }
             else {
-                db.collection('horse').replaceOne({_id: req.body._id},req.body, function(err, horse){
+                db.collection('horse').replaceOne({ _id: req.body._id }, req.body, function (err, horse) {
                     res.send(horse.ops[0]);
                 })
             }
         }
-        
+
     });
 }
 

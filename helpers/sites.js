@@ -22,6 +22,7 @@ const sites = {
         eventsURL: xrcBaseURL + 'events.php',
         eventURL: xrcBaseURL + 'event.php?id={{id}}',
         officialsURL: xrcBaseURL + 'officials.php?id={{id}}',
+        horseSummaryURL: xrcBaseURL + 'horse_results_summary.php?horseid={{id}}',
     },
     NAMEF: {
         baseURL: xrcNamBaseURL,
@@ -30,6 +31,7 @@ const sites = {
         eventsURL: xrcNamBaseURL + 'events.php',
         eventURL: xrcNamBaseURL + 'event.php?id={{id}}',
         officialsURL: xrcNamBaseURL + 'officials.php?id={{id}}',
+        horseSummaryURL: xrcNamBaseURL + 'horse_results_summary.php?horseid={{id}}',
     },
     DRASA: {
         baseURL: drasaBaseURL,
@@ -38,6 +40,7 @@ const sites = {
         eventsURL: drasaBaseURL + 'events.php',
         eventURL: drasaBaseURL + 'event.php?id={{id}}',
         officialsURL: drasaBaseURL + 'officials.php?id={{id}}',
+        horseSummaryURL: drasaBaseURL + 'horse_results_summary.php?horseid={{id}}',
     },
     PARKRIDES: {
         baseURL: parkRidesBaseURL,
@@ -46,6 +49,7 @@ const sites = {
         eventsURL: parkRidesBaseURL + 'events/m/',
         eventURL: parkRidesBaseURL + 'events/m/{{id}}',
         officialsURL: parkRidesBaseURL + 'events/m/{{id}}/official',
+        horseSummaryURL: parkRidesBaseURL + 'horses/{{id}}/summary',
     }
 }
 
@@ -89,6 +93,14 @@ function getEntries(type, eventid, callback) {
     GET(url, callback);
 }
 
+function getHorseSummary(type, horseRef, callback) {
+    if (!sites[type]) return callback('Type does not exist');
+
+    let url = mustache.render(sites[type].horseSummaryURL, { id: horseRef });
+
+    GET(url, callback);
+}
+
 function GET(url, callback) {
     let options = {
         method: 'GET',
@@ -114,5 +126,6 @@ module.exports = {
     getEvents,
     getEvent,
     getEntries,
-    getOfficials
+    getOfficials,
+    getHorseSummary
 }
