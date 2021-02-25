@@ -4,12 +4,14 @@ const getDb = require("../db").getDb;
 var passport = require('passport');
 const async = require('async');
 const sites = require('../helpers/sites');
+var { enqueueJob } = require('../helpers/jobqueue');
 
 require('../config/passport')(passport);
 
 router.get('/:type/:id', GetResults);
 router.post('/:type/search', SearchResults);
 router.post('/:type/:id', AddLiveResults);
+router.post('/:type/:id/generateCerts', GenerateCertificates);
 router.post('/:type/:id/:dayno', UpdateLiveResults);
 router.post('/status', GetLocalServerStatus);
 
@@ -130,6 +132,39 @@ function GetLocalServerStatus(req, res) {
                 res.send(server);
             });
         });
+}
+
+function GenerateCertificates(req, res) {
+    console.log('GenerateCertificates');
+    let type = req.params.type;
+
+    if(type != 'ERASA') {
+        res.status(500);
+        return res.json({
+            message: 'Only ERASA Implemented',
+            error: 'Only ERASA Implemented'
+        });
+    }
+
+    enqueueJob({
+        jobName: 'workflow',
+        data: {
+            workflowId: '60365962be4f6b5648bd6195',
+            params: {
+                raceid: req.params.id
+            }
+        },
+    }, function (err, arg) {
+        if(err) {
+            console.log(err);
+            res.status(500);
+            return res.json({
+                message: err.message,
+                error: err
+            });
+        }
+        else return res.send({ message: 'enqeued' });
+    })
 }
 
 function GetResults(req, res) {
