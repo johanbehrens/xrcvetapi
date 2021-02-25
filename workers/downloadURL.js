@@ -1,6 +1,9 @@
 const fetch = require('node-fetch');
+const mustache = require('mustache');
 
 function Download(params, data, callback) {
+
+    params.url = mustache.render(params.url, data);
     fetch(params.url)
         .then(res => res.json())
         .then(json => {

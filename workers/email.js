@@ -1,10 +1,11 @@
 nodeMailer = require('nodemailer')
 const config = require("../config/database.js");
 const fs = require('fs');
+const mustache = require('mustache');
 
 function SendEmail(params, data, mainCallback) {
 
-    if (!params.to) return mainCallback('Please specify a to parameter');
+    if (!params.to && !data.to) return mainCallback('Please specify a to parameter');
 
     if(data && data.emptyPayload && params.cancelOnEmpty) return mainCallback('Canceled Email, no data');
 
@@ -12,15 +13,23 @@ function SendEmail(params, data, mainCallback) {
 
     if (data && data.error) {
         params.html += data.error.message;
-    }
+    }    
+
+    console.log(data);
+    
+    params.html = mustache.render(params.html, data);
+    params.subject = mustache.render(params.subject, data);
 
     let mailOptions = {
         from: config.SMTP_Sender,
-        to: params.to,
+        to: params.to ?? data.to,
         subject: params.subject,
         html: params.html
     };
 
+    if(data.cc) mailOptions.cc = data.cc;
+    if(params.cc) mailOptions.cc = params.cc;
+    
     if (data && data.attachments) {
         mailOptions.attachments = data.attachments;
     }

@@ -1,10 +1,28 @@
 const fs = require('fs');
 const fetch = require('node-fetch');
 
-function Download(params, data, callback) {
-    const file = fs.createWriteStream(params.fileName);
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+      var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+      return v.toString(16);
+    });
+  }
 
-    fetch(params.url, { method: params.method, body: data[params.body] })
+function Download(params, data, callback) {
+
+    let preFix = './temp/' + uuidv4();
+    const file = fs.createWriteStream(preFix +'_' +params.fileName);
+
+    let body;
+    if (params.body) body = data[params.body]
+    else {
+        body = new URLSearchParams();
+        Object.keys(data).forEach((key) => {
+            body.append(key, data[key]);
+        });
+    }
+
+    fetch(params.url, { method: params.method, body })
         .then(response => {
             response.body.pipe(file);
 
@@ -14,13 +32,13 @@ function Download(params, data, callback) {
                 }
                 data.attachments.push({
                     filename: params.fileName,
-                    path: params.fileName
+                    path: preFix +'_' +params.fileName
                 });
                 file.close(done);
             });
         })
 
-    .catch(err => callback(err.message));
+        .catch(err => callback(err.message));
 
     function done() {
         callback(null, data);

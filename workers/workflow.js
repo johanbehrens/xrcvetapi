@@ -17,7 +17,13 @@ function Workflow(data, callback) {
             console.log(err);
             return callback(err);
         }
-        DoWork(workflow, callback);
+        else {
+            if(data.params) {
+                if(workflow.params) workflow.params = {...workflow.params, ...data.params};
+                else workflow.params = {...data.params}
+            }
+            DoWork(workflow, callback);
+        }
     });
 }
 
@@ -33,7 +39,7 @@ function DoWork(workflow, callback) {
     let torun = [];
     if (workflow.params) {
         Object.keys(workflow.params).forEach(param => {
-            if (typeof workflow.params[param] == 'object' && param != 'filters') {
+            if (typeof workflow.params[param] == 'object' && param != 'filters' && workflow.params[param] != null) {
                 workflow.params[param] = helper[workflow.params[param].function](...workflow.params[param].args);
             }
         });
