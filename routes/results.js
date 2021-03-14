@@ -40,7 +40,7 @@ function AddLiveResults(req, res) {
     let clientTime = new Date(req.body.stamp);
     let serverTime = new Date();
     var clientServerDiff = (serverTime - clientTime);
-
+    
     let type = req.params.type;
 
     console.log('AddLiveResults');
@@ -58,11 +58,16 @@ function AddLiveResults(req, res) {
     });
 
     async.eachSeries(items, function (item, callback) {
+        let newItem = {};
+        Object.keys(item).forEach(i => {
+            let index = i.replace(/\uFFFD/g, '').replace(/\u0001/g, '');
+            newItem[index] = item[i];
+        })
         db.collection('location').updateOne(
-            { type, raceId: req.body.raceid, date, riderNumber: item.DAYNO },
+            { type, raceId: req.body.raceid, date, riderNumber: newItem.DAYNO },
             {
                 $set: {
-                    ...item,
+                    ...newItem,
                     type,
                     raceid: req.body.raceid,
                     date
