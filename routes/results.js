@@ -60,7 +60,7 @@ function AddLiveResults(req, res) {
     async.eachSeries(items, function (item, callback) {
         let newItem = {};
         Object.keys(item).forEach(i => {
-            let index = i.replace(/\uFFFD/g, '').replace(/\u0001/g, '').replace(/\u0003/g, '');
+            let index = i.replace(/\uFFFD/g, '').replace(/\u0001/g, '').replace(/\u0002/g, '').replace(/\u0003/g, '').replace(/\u0004/g, '').replace(/\u0005/g, '').replace(/\)/g, '');
             newItem[index] = item[i];
         })
         db.collection('location').updateOne(
