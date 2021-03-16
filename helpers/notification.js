@@ -1,8 +1,10 @@
 admin = require('firebase-admin');
 const getDb = require("../db").getDb;
 
+var serviceAccount = require("./xrc-tracker-1553667749489-firebase-adminsdk-vb6vs-448ba1e226.json");
+
 admin.initializeApp({
-    credential: admin.credential.applicationDefault()
+    credential: admin.credential.cert(serviceAccount)
 });
 
 function SendNotification({userId, title, body}, callback) {
