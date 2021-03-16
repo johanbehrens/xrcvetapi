@@ -7,9 +7,8 @@ let xrcNamBaseURL = 'https://nam.xrc.co.za/m/';
 let drasaBaseURL = 'https://drasa.org.za/m/';
 let parkRidesBaseURL = 'http://209.97.178.43/api/';
 
-
+/*
  xrcBaseURL = 'http://xrc/m/';
- /*
  xrcNamBaseURL = 'http://nam/m/';
  drasaBaseURL = 'http://drasa/m/';
  parkRidesBaseURL = 'http://localhost:8080/api/';
