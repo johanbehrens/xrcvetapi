@@ -336,7 +336,7 @@ function AddLocation(req, res) {
     if (raceId) {
         toMatch = {
             raceId,
-            raceType,
+            type: raceType,
             riderNumber
         }
     }
@@ -358,7 +358,7 @@ function AddLocation(req, res) {
                     horseId,
                     riderId,
                     raceId,
-                    raceType,
+                    type: raceType,
                     riderNumber,
                     date: new ISODate(req.body[7]),
                     start: Number(req.body[6]),
