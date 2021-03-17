@@ -205,6 +205,7 @@ function liveLocationsAggregate(raceId, type) {
             locations: { $slice: ["$locations", -3] },
             raceId: 1,
             riderNumber: 1,
+            date:1,
             type: 1,
             diff:1,
             AVE_SPD: 1,
@@ -278,7 +279,7 @@ function liveLocationsAggregate(raceId, type) {
         }
     },{
         $sort: {
-            date: 1, Category: 1, Division: 1, Pos: 1
+            date: 1, CAT: 1, TOT_TIME: -1
         }
     }];
 }
