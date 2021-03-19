@@ -488,6 +488,7 @@ function raceLocationsAggregate(raceId) {
             DAYNO: 1,
             HNAME: 1,
             HCODE: 1,
+            CAT:1
         }
     }, {
         $unwind: {
