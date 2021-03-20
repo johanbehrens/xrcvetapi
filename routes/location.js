@@ -450,49 +450,89 @@ function AddLocation(req, res) {
 function raceLocationsAggregate(raceId) {
     return [{
         $match: {
-            raceId: raceId
-        }
-    }, {
-        $lookup: {
-            "from": "rider",
-            "localField": "riderId",
-            "foreignField": "_id",
-            "as": "rider"
+            raceId
         }
     }, {
         $project: {
             rider: 1,
             locations: { $slice: ["$locations", -3] },
-            TOT_TIME: 1,
-            TIME1: 1,
-            SLIP1: 1,
-            PULSE1: 1,
-            ARRIVAL1: 1,
-            TIME2: 1,
-            ARRIVAL2: 1,
-            SLIP2: 1,
-            PULSE2: 1,
-            TIME3: 1,
-            ARRIVAL3: 1,
-            SLIP3: 1,
-            PULSE3: 1,
-            TIME4: 1,
-            ARRIVAL4: 1,
-            SLIP4: 1,
-            PULSE4: 1,
-            DIST: 1,
-            Ride: 1,
+            raceId: 1,
+            riderNumber: 1,
+            date:1,
+            type: 1,
+            diff:1,
             AVE_SPD: 1,
+            ARRIVAL1:1,
+            ARRIVAL2:1,
+            ARRIVAL3:1,
+            ARRIVAL4:1,
+            ARRIVAL5:1,
+            ARRIVAL6:1,
             CALLNAME: 1,
-            FNAME: 1,
+            CCODE:1,
+            CAT: 1,
             DAYNO: 1,
-            HNAME: 1,
+            DLEG1:1,
+            DLEG2:1,
+            DLEG3:1,
+            DLEG4:1,
+            DLEG5:1,
+            DLEG6:1,
+            DISQ: 1,
+            DIST: 1,
+            FNAME: 1,
             HCODE: 1,
-            CAT:1
+            HNAME: 1,
+            MCODE: 1,
+            PULSE1: 1,
+            PULSE2: 1,
+            PULSE3: 1,
+            PULSE4: 1,
+            PULSE5: 1,
+            PULSE6: 1,
+            REASON: 1,
+            R_TIME1: 1,
+            R_TIME2: 1,
+            R_TIME3: 1,
+            R_TIME4: 1,
+            R_TIME5: 1,
+            R_TIME6: 1,
+            COL_LEG1: 1,
+            COL_LEG2: 1,
+            COL_LEG3: 1,
+            COL_LEG4: 1,
+            COL_LEG5: 1,
+            COL_LEG6: 1,
+            SPEED1: 1,
+            SPEED2: 1,
+            SPEED3: 1,
+            SPEED4: 1,
+            SPEED5: 1,
+            SPEED6: 1,
+            SLIP1: 1,
+            SLIP2: 1,
+            SLIP3: 1,
+            SLIP4: 1,
+            SLIP5: 1,
+            SLIP6: 1,
+            TIME1: 1,
+            TIME10: 1,
+            TIME11: 1,
+            TIME12: 1,
+            TIME2: 1,
+            TIME3: 1,
+            TIME4: 1,
+            TIME5: 1,
+            TIME6: 1,
+            TIME7: 1,
+            TIME8: 1,
+            TIME9: 1,
+            TOTSLIP: 1,
+            TOT_TIME: 1,
         }
-    }, {
-        $unwind: {
-            path: "$rider"
+    },{
+        $sort: {
+            date: 1, CAT: 1, TOT_TIME: -1
         }
     }];
 }
