@@ -22,7 +22,12 @@ function Download(params, data, callback) {
         });
     }
 
-    fetch(params.url, { method: params.method, body })
+    let options = {
+        method: params.method
+    }
+    if(params.method == 'POST') options.body = body;
+
+    fetch(params.url, options)
         .then(response => {
             response.body.pipe(file);
 
