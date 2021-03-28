@@ -567,14 +567,22 @@ function GetEvents(req, res) {
 
         list.forEach(event => {
             if (event) {
-                let deventDate = new Date(event.start);
+                let deventDate = new Date();
+                let dendDate = new Date();
+
+                if (event.type == 'PERSONAL') {
+                    deventDate = event.date;
+                    dendDate = event.date;
+                }
+                else {
+                    dendDate = new Date(event.end);
+                    deventDate = new Date(event.start);
+                }
+
                 let eventDate = deventDate.toISOString().split('T')[0];
 
                 let dtoday = new Date();
                 let today = dtoday.toISOString().split('T')[0];
-
-                
-                let dendDate = new Date(event.end);
 
                 if (event.type != 'PERSONAL' && eventDate != dendDate.toISOString().split('T')[0] && deventDate <= dtoday && dtoday <= dendDate.toISOString().split('T')[0]) {
                     event._active = true;
