@@ -2,6 +2,7 @@ const { URLSearchParams } = require('url');
 const getDb = require("../db").getDb;
 const mustache = require('mustache');
 var moment = require('moment');
+var { Download } = require('./downloadURL');
 
 function Generate(params, data, callback) {
     var db = getDb();
@@ -16,7 +17,7 @@ function Generate(params, data, callback) {
     });
 
     function RetrievedInvoices() {
-       
+
         if (!data.invoice) {
             data.invoice = params.invoice;
         }
@@ -57,6 +58,8 @@ function Generate(params, data, callback) {
         data.invoice.amount = 0;
         data.invoice.invoiceNumber = invoiceNumber;
         data.invoice.invoiceRef = params.invoice.preFix + (('00000' + invoiceNumber).slice(-5));
+        data.invoice.paid = false;
+        data.invoice.generated = new Date();
 
         data.invoice.lineItems.map((item, i) => {
             data.invoiceParams.append('lineItem_' + i + '_qty', item.qty);
@@ -65,15 +68,39 @@ function Generate(params, data, callback) {
             data.invoice.amount += (item.qty * item.unitPrice);
         });
 
-        data.invoice.paid = false;
-        data.invoice.generated = new Date();
+        let invoice = {};
+        invoice.clientName = params.invoice.clientName;
+        invoice.toEmail = params.invoice.personEmail;
+        invoice.to = params.invoice.personName;
+        invoice.invoiceDate = moment().format('YYYY-MM-DD');
+        invoice.invoiceTemplateId = params.invoice.invoiceTemplateId; //
+        invoice.eventType = params.invoice.eventType; //
+        invoice.eventName = params.invoice.invoiceDescription;
+        invoice.eventDate = data.invoice.currentDate;
+        invoice.preFix = params.invoice.preFix;
+        invoice.invoiceNr = (('00000' + invoiceNumber).slice(-5));
 
-        db.collection('invoices').insertOne(data.invoice, function (err, invoiceIn) {
-            if (err) {
-                return callback(null, data);
+        invoice.descriptions = data.invoice.lineItems.map((item, i) => {
+            return {
+                description: item.description,
+                qty: item.qty,
+                price: item.unitPrice
             }
-            else return callback(null, data);
         });
+
+        Download({
+            "url": params.invoice.url,
+            method: 'POST',
+        }, invoice, done);
+
+        function done(err) {
+            db.collection('invoices').insertOne(data.invoice, function (err, invoiceIn) {
+                if (err) {
+                    return callback(null, data);
+                }
+                else return callback(null, data);
+            });
+        }
     }
 }
 

@@ -3,11 +3,22 @@ const mustache = require('mustache');
 
 function Download(params, data, callback) {
 
+    let options = {};
+
+    if(params.method && params.method.toUpperCase() == 'POST') {
+        options.body = JSON.stringify(data);
+        options.method = 'POST';
+        options.headers=  { 'Content-Type': 'application/json' }
+    }
+    else {
+        options.method = 'GET';
+    }
+
     params.url = mustache.render(params.url, data);
-    fetch(params.url)
+    fetch(params.url, options)
         .then(res => res.json())
         .then(json => {
-            //console.log(json);
+            console.log(json);
             data.payload = json;
 
             if (params.lineItemDescription) {

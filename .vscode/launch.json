@@ -28,7 +28,7 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "ImportResults",
+            "name": "Test",
             "program": "${workspaceFolder}/test.js"
         },
         {

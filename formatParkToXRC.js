@@ -10,12 +10,12 @@ initDb({}, function (err) {
     }
     var db = getDb();
 
-    db.collection('pr_results').findOne({ _id: ObjectID("5f95aef90ae4fd17051166b3") }, function (err, result) {
+    db.collection('pr_results').findOne({ _id: ObjectID("60622f9ae5c18f09c4e5ce0a") }, function (err, result) {
         
 
         let newTrack = {
             "name": result.description,
-            "color": "blue",
+            "color": "green",
             "leg": "1",
             "locations": result.coords.map(l => {
                 return {
