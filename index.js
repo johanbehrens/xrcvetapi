@@ -22,6 +22,7 @@ const initDb = require("./db").initDb;
 
 var bodyParser = require('body-parser');
 var events = require('./routes/events');
+var lora = require('./routes/lora');
 var horses = require('./routes/horses');
 var riders = require('./routes/riders');
 var rides = require('./routes/rides');
@@ -52,6 +53,7 @@ require('./config/passport')(passport);
 var routes = require('./routes/router');
 
 app.use('/', routes);
+app.use('/lora', lora);
 app.use('/events', events);
 app.use('/elmicom', elmicom);
 app.use('/horses', passport.authenticate('jwt', { session: false}), horses);
