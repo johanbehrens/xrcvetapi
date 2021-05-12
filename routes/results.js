@@ -44,54 +44,86 @@ function AddLiveResults(req, res) {
 
     let type = req.params.type;
 
-    console.log('AddLiveResults');
-    let items = req.body.items;
-    items.map(i => {
-        if (i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
-        if (i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
-        if (!i["HCODE"]) i["HCODE"] = 'n/a';
-        if (!i["TOT_TIME"] || i["TOT_TIME"] == '') i["TOT_TIME"] = '00:00:00';
-        if (!i["TOTSLIP"] || i["TOTSLIP"] == '') i["TOTSLIP"] = '00:00:00';
-        i.raceId = req.body.raceid;
-        i.type = type;
-        i.date = date;
-        i.diff = clientServerDiff;
-    });
+    let dayNrChanges = req.body.dayNrChanges;
+    if (dayNrChanges && dayNrChanges.length > 0) {
+        async.eachSeries(dayNrChanges, function (dayNrChange, callback) {
+            db.collection('location').updateOne(
+                { type, raceId: req.body.raceid, date, riderNumber: dayNrChange.previous },
+                {
+                    $set: {
+                        riderNumber: dayNrChange.new
+                    }
+                }, function (err, result) {
+                    callback();
+                });
+        }, function (err) {
+            if (err) {
+                res.status(500);
+                res.json({
+                    message: err.message,
+                    error: err
+                });
+            }
+            else {
+                updateAll();
+            }
+        });
+    }
+    else 
+    {
+        updateAll();
+    }
 
-    async.eachSeries(items, function (item, callback) {
-        let newItem = {};
-        Object.keys(item).forEach(i => {
-            let index = i.replace(/\uFFFD/g, '').replace(/\u0001/g, '').replace(/\u0002/g, '').replace(/\u0003/g, '').replace(/\u0004/g, '').replace(/\u0005/g, '').replace(/\)/g, '');
-            newItem[index] = item[i];
-        })
-        db.collection('location').updateOne(
-            { type, raceId: req.body.raceid, date, riderNumber: newItem.DAYNO },
-            {
-                $set: {
-                    ...newItem,
-                    type,
-                    raceid: req.body.raceid,
-                    date
-                }
-            },
-            { upsert: true }, function (err, result) {
-                callback();
-            });
-    }, function (err) {
-        if (err) {
-            res.status(500);
-            res.json({
-                message: err.message,
-                error: err
-            });
-        }
-        else {
-            let reply = {
-                update: 'success'
-            };
-            res.send(reply);
-        }
-    });
+    function updateAll() {
+        console.log('AddLiveResults');
+        let items = req.body.items;
+        items.map(i => {
+            if (i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
+            if (i.AVE_SPD == 0) i.AVE_SPD = 'n/a';
+            if (!i["HCODE"]) i["HCODE"] = 'n/a';
+            if (!i["TOT_TIME"] || i["TOT_TIME"] == '') i["TOT_TIME"] = '00:00:00';
+            if (!i["TOTSLIP"] || i["TOTSLIP"] == '') i["TOTSLIP"] = '00:00:00';
+            i.raceId = req.body.raceid;
+            i.type = type;
+            i.date = date;
+            i.diff = clientServerDiff;
+        });
+
+        async.eachSeries(items, function (item, callback) {
+            let newItem = {};
+            Object.keys(item).forEach(i => {
+                let index = i.replace(/\uFFFD/g, '').replace(/\u0001/g, '').replace(/\u0002/g, '').replace(/\u0003/g, '').replace(/\u0004/g, '').replace(/\u0005/g, '').replace(/\)/g, '');
+                newItem[index] = item[i];
+            })
+            db.collection('location').updateOne(
+                { type, raceId: req.body.raceid, date, riderNumber: newItem.DAYNO },
+                {
+                    $set: {
+                        ...newItem,
+                        type,
+                        raceid: req.body.raceid,
+                        date
+                    }
+                },
+                { upsert: true }, function (err, result) {
+                    callback();
+                });
+        }, function (err) {
+            if (err) {
+                res.status(500);
+                res.json({
+                    message: err.message,
+                    error: err
+                });
+            }
+            else {
+                let reply = {
+                    update: 'success'
+                };
+                res.send(reply);
+            }
+        });
+    }
 }
 
 function GetLocalServerStatus(req, res) {
@@ -205,26 +237,26 @@ function liveLocationsAggregate(raceId, type) {
             locations: { $slice: ["$locations", -3] },
             raceId: 1,
             riderNumber: 1,
-            date:1,
+            date: 1,
             type: 1,
-            diff:1,
+            diff: 1,
             AVE_SPD: 1,
-            ARRIVAL1:1,
-            ARRIVAL2:1,
-            ARRIVAL3:1,
-            ARRIVAL4:1,
-            ARRIVAL5:1,
-            ARRIVAL6:1,
+            ARRIVAL1: 1,
+            ARRIVAL2: 1,
+            ARRIVAL3: 1,
+            ARRIVAL4: 1,
+            ARRIVAL5: 1,
+            ARRIVAL6: 1,
             CALLNAME: 1,
-            CCODE:1,
+            CCODE: 1,
             CAT: 1,
             DAYNO: 1,
-            DLEG1:1,
-            DLEG2:1,
-            DLEG3:1,
-            DLEG4:1,
-            DLEG5:1,
-            DLEG6:1,
+            DLEG1: 1,
+            DLEG2: 1,
+            DLEG3: 1,
+            DLEG4: 1,
+            DLEG5: 1,
+            DLEG6: 1,
             DISQ: 1,
             DIST: 1,
             FNAME: 1,
@@ -277,7 +309,7 @@ function liveLocationsAggregate(raceId, type) {
             TOTSLIP: 1,
             TOT_TIME: 1,
         }
-    },{
+    }, {
         $sort: {
             date: 1, CAT: 1, TOT_TIME: -1
         }

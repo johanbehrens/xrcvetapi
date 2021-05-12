@@ -2,7 +2,7 @@
 var XLSX = require('xlsx')
 var DBFFile = require ('dbffile').DBFFile;
 
-    var workbook = XLSX.readFile('./horses.xlsx');
+    var workbook = XLSX.readFile('./members_.xlsx');
     console.log(workbook.SheetNames);
 
 
@@ -10,19 +10,20 @@ let records = XLSX.utils.sheet_to_json(workbook.Sheets[workbook.SheetNames[0]]);
 
 records = records.map(r => {
     return {
-        HCODE: r['UV Code'],
-        HORSE: r['Horse'],
-        HORSE_DOB: r['Date of Birth'],
-        SEX: r['Gender'],
-        BREED: r['Breed'],
-        COLOUR: r['Color']
+        CODE: r['Member Nr'] +'',
+        SEN_JUN: r['Membership Type'].split(' ')[0].toUpperCase(),
+        CLUBCODE: r['Club'],
+        CALLNAME: r['Name'],
+        NAME: r['Surname'],
+        INITIALS: r['Name'][0],
+        B_DATE: r['Date Of Birth']
     }
 })
 
 console.log(records);
 
 
-let o ="HCODE,C,9	PASSPORT,C,10	HORSE,C,45	BREED,C,25	HORSE_DOB,C,10	SEX,C,1	COLOUR,C,12	HEAD,C,9	PREVIOUS,C,9	SIRE,C,36	DAM,C,36	SIRE_REG_N,C,9	DAM_REG_N,C,9	SIRE_BREED,C,15	DAM_BREED,C,15	OWNER,C,30	CLUBNO,C,8	REG_NO,C,15	LEG,C,9	BOOK_NO,N,19,0	PAID,C,1	ALIVE,C,1	COPIES,C,1	DATE_ISSUE,C,12"
+let o ="NAME,C,35	INITIALS,C,4	CODE,C,7	CLUBCODE,C,30	CLUB,C,1	YEAR,C,1	PROV,C,1	MR_MRS,C,5	R_SEX,C,1	LANGUAGE,C,1	TELEPHONE,C,12	TELCODE,C,1	ADDRESS_1,C,22	ADDRESS_2,C,22	ADDRESS_3,C,22	CALLNAME,C,25	NCODE,C,30	B_DATE,C,11	OLDCODE,C,30	EMAIL,C,30	SEN_JUN,C,10"
 
 let fieldDescriptors = [];
 
@@ -35,7 +36,7 @@ y.forEach(element => {
 
 async function testWrite() {
     try {
-    let dbf = await DBFFile.create('./MemBHorse.dbf', fieldDescriptors);
+    let dbf = await DBFFile.create('./MEMBCODE.DBF', fieldDescriptors);
     console.log('DBF file created.');
     await dbf.appendRecords(records);
     console.log(`${records.length} records added.`);
