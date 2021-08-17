@@ -10,13 +10,13 @@ initDb({}, function (err) {
     }
     var db = getDb();
 
-    db.collection('pr_results').findOne({ _id: ObjectID("60622f9ae5c18f09c4e5ce0a") }, function (err, result) {
+    db.collection('pr_results').findOne({ _id: ObjectID("611b69402172ae6654bf8100") }, function (err, result) {
         
 
         let newTrack = {
-            "name": result.description,
+            "name": 'De Zeekoe 1',
             "color": "green",
-            "leg": "1",
+            "leg": "2",
             "locations": result.coords.map(l => {
                 return {
                     latitude: l.lat,

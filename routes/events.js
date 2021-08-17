@@ -614,7 +614,11 @@ function GetEvents(req, res) {
             }
         });
 
+
+
         list = [...live, ...active, ...upcoming, ...rest];
+
+        console.log(list);
 
         return res.json(list);
 

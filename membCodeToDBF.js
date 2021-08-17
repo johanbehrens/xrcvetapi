@@ -2,7 +2,7 @@
 var XLSX = require('xlsx')
 var DBFFile = require ('dbffile').DBFFile;
 
-    var workbook = XLSX.readFile('./members_.xlsx');
+    var workbook = XLSX.readFile('./members.xlsx');
     console.log(workbook.SheetNames);
 
 
