@@ -111,12 +111,16 @@ function GET(url, callback) {
         json: true
     };
 
+    console.log('GET',url);
+
     rp(options)
         .then(function (d) {
+            console.log('GET RETURN',d);
             if (d.error) return callback(d.error);
             return callback(null, d);
         })
         .catch(function (err) {
+            console.log('GET ERROR', err)
             return callback(err.statusCode);
         });
 }
