@@ -554,6 +554,9 @@ function GetEvents(req, res) {
         });
 
         list = list.slice(start, end);
+
+        console.log(list);
+
         let counter = start;
         list = list.map(function (item) {
             item.newId = counter++;
