@@ -497,8 +497,11 @@ function GetEvents(req, res) {
         PRIVATE: async.apply(user.GetHistory, req.user._id),
         LOCAL: GetLocalEvents
     };
+    console.log('functionList ->', functionList);
 
     req.query.page = parseInt(req.query.page) + 1;
+    console.log('GetEvents ->', req.query);
+
     if (req.query.filter) {
         functionList = {};
 
