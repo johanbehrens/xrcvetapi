@@ -524,7 +524,9 @@ function GetEvents(req, res) {
     }
     console.log('GetEvents', start, end);
 
-    async.parallel(functionList, formatData);
+
+
+    async.parallel(functionList, formatData, functionList);
 
     function formatData(err, results) {
         if (err) {
