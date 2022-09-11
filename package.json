@@ -13,7 +13,7 @@
     "chokidar": "^3.0.2",
     "convert-excel-to-json": "^1.6.1",
     "cors": "^2.8.5",
-    "cote": "^0.20.3",
+    "cote": "^1.0.3",
     "csv": "^5.5.0",
     "csvtojson": "^2.0.10",
     "dbffile": "^1.2.0",
@@ -52,7 +52,7 @@
     "ping": "^0.2.2",
     "request-promise": "^4.2.5",
     "smb2": "^0.2.11",
-    "socket.io": "^2.3.0",
+    "socket.io": "^2.5.0",
     "xlsx": "^0.14.3"
   }
 }
