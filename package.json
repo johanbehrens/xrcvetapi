@@ -22,7 +22,7 @@
     "epson-thermal-printer": "^1.0.0",
     "esm": "^3.2.25",
     "express": "^4.16.4",
-    "express-fileupload": "^1.1.4",
+    "express-fileupload": "^1.1.9",
     "fetch-base64": "^2.1.2",
     "firebase-admin": "^7.3.0",
     "google-play-billing-validator": "^2.0.2",
