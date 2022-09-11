@@ -3,7 +3,7 @@ var imaps = require('imap-simple');
 var config = {
     imap: {
         user: 'admin@xrc.co.za',
-        password: 'behrens!5',
+        password: '0VR9voYW5B',
         host: 'srv1.smartwebdns.net',
         port: 993,
         tls: true,

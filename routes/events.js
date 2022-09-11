@@ -389,9 +389,24 @@ function GetPublicEvents(req, res) {
         ERASA: async.apply(sites.getEvents, 'ERASA'),
         DRASA: async.apply(sites.getEvents, 'DRASA'),
         NAMEF: async.apply(sites.getEvents, 'NAMEF'),
-        PARKRIDES: async.apply(sites.getEvents, 'PARKRIDES'),
+        //PARKRIDES: async.apply(sites.getEvents, 'PARKRIDES'),
         LOCAL: GetLocalEvents
     };
+
+    if (req.query.filter) {
+        functionList = {};
+
+        let newfilter = req.query.filter.split(',');
+        newfilter.forEach(fil => {
+            let t = fil.split(':');
+            if (t[0] == 'ERASA' && t[1] == 'true') functionList['ERASA'] = async.apply(sites.getEvents, 'ERASA');
+            if (t[0] == 'DRASA' && t[1] == 'true') functionList['DRASA'] = async.apply(sites.getEvents, 'DRASA');
+            if (t[0] == 'NAMEF' && t[1] == 'true') functionList['NAMEF'] = async.apply(sites.getEvents, 'NAMEF');
+           // if (t[0] == 'PARKRIDES' && t[1] == 'true') functionList['PARKRIDES'] = async.apply(sites.getEvents, 'PARKRIDES');
+            //if (req.user && t[0] == 'PERSONAL' && t[1] == 'true') functionList['PRIVATE'] = async.apply(user.GetHistory, req.user._id);
+            functionList['LOCAL'] = GetLocalEvents
+        });
+    }
 
     req.query.page = parseInt(req.query.page) + 1;
 
@@ -493,10 +508,14 @@ function GetEvents(req, res) {
         ERASA: async.apply(sites.getEvents, 'ERASA'),
         DRASA: async.apply(sites.getEvents, 'DRASA'),
         NAMEF: async.apply(sites.getEvents, 'NAMEF'),
-        PARKRIDES: async.apply(sites.getEvents, 'PARKRIDES'),
-        PRIVATE: async.apply(user.GetHistory, req.user._id),
+      //  PARKRIDES: async.apply(sites.getEvents, 'PARKRIDES'),
         LOCAL: GetLocalEvents
     };
+
+    if(req.user) {
+        functionList.PRIVATE = async.apply(user.GetHistory, req.user._id);
+    }
+
     console.log('functionList ->', functionList);
 
     req.query.page = parseInt(req.query.page) + 1;
@@ -511,8 +530,8 @@ function GetEvents(req, res) {
             if (t[0] == 'ERASA' && t[1] == 'true') functionList['ERASA'] = async.apply(sites.getEvents, 'ERASA');
             if (t[0] == 'DRASA' && t[1] == 'true') functionList['DRASA'] = async.apply(sites.getEvents, 'DRASA');
             if (t[0] == 'NAMEF' && t[1] == 'true') functionList['NAMEF'] = async.apply(sites.getEvents, 'NAMEF');
-            if (t[0] == 'PARKRIDES' && t[1] == 'true') functionList['PARKRIDES'] = async.apply(sites.getEvents, 'PARKRIDES');
-            if (t[0] == 'PERSONAL' && t[1] == 'true') functionList['PRIVATE'] = async.apply(user.GetHistory, req.user._id);
+           // if (t[0] == 'PARKRIDES' && t[1] == 'true') functionList['PARKRIDES'] = async.apply(sites.getEvents, 'PARKRIDES');
+            if (req.user && t[0] == 'PERSONAL' && t[1] == 'true') functionList['PRIVATE'] = async.apply(user.GetHistory, req.user._id);
             functionList['LOCAL'] = GetLocalEvents
         });
     }
@@ -526,8 +545,6 @@ function GetEvents(req, res) {
         end = 20;
     }
     console.log('GetEvents', start, end);
-
-
 
     async.parallel(functionList, formatData, functionList);
 
@@ -560,7 +577,7 @@ function GetEvents(req, res) {
 
         list = list.slice(start, end);
 
-        console.log(list);
+       // console.log(list);
 
         let counter = start;
         list = list.map(function (item) {
@@ -626,7 +643,7 @@ function GetEvents(req, res) {
 
         list = [...live, ...active, ...upcoming, ...rest];
 
-        console.log(list);
+       // console.log(list);
 
         return res.json(list);
 

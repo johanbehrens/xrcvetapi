@@ -15,6 +15,7 @@
     "cors": "^2.8.5",
     "cote": "^0.20.3",
     "csv": "^5.5.0",
+    "csvtojson": "^2.0.10",
     "dbffile": "^1.2.0",
     "email-templates": "^6.0.0",
     "endomondo-unofficial-api": "^1.0.68",

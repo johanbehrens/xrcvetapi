@@ -24,6 +24,7 @@ var bodyParser = require('body-parser');
 var events = require('./routes/events');
 var lora = require('./routes/lora');
 var horses = require('./routes/horses');
+var devices = require('./routes/devices');
 var riders = require('./routes/riders');
 var rides = require('./routes/rides');
 var members = require('./routes/members');
@@ -38,6 +39,8 @@ var results = require('./routes/results');
 var passport	= require('passport');
 var elmicom = require('./addons/elmicom');
 const fileUpload = require('express-fileupload');
+var WebSockets = require("./utils/WebSockets.js").init();
+var http = require("http");
 var cors = require('cors')
 const app = express();
 app.use(cors());
@@ -57,6 +60,7 @@ app.use('/lora', lora);
 app.use('/events', events);
 app.use('/elmicom', elmicom);
 app.use('/horses', passport.authenticate('jwt', { session: false}), horses);
+app.use('/devices', passport.authenticate('jwt', { session: false}), devices);
 app.use('/riders', passport.authenticate('jwt', { session: false}), riders);
 app.use('/rides', passport.authenticate('jwt', { session: false}), rides);
 app.use('/members', passport.authenticate('jwt', { session: false}), members);
@@ -70,7 +74,12 @@ app.use('/results', results);
 app.use('/images', images);
 
 initDb({}, function (err) {
-    app.listen(port, function (err) {
+
+    const server = http.createServer(app);
+    global.io = require("socket.io")(server);
+    global.io.on("connection", WebSockets.connection);
+  
+    server.listen(port, function (err) {
         if (err) {
             throw err; //
         }

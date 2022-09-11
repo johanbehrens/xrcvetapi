@@ -10,21 +10,28 @@ initDb({}, function (err) {
     }
     var db = getDb();
 
-    db.collection('pr_results').findOne({ _id: ObjectID("611b69402172ae6654bf8100") }, function (err, result) {
+    db.collection('location').findOne({ _id: ObjectID("6197879a67634d2e2cc03211") }, function (err, result) {
         
 
         let newTrack = {
-            "name": 'De Zeekoe 1',
-            "color": "green",
-            "leg": "2",
-            "locations": result.coords.map(l => {
+            "name": 'Elim 2021',
+            "color": "blou",
+            "leg": "1",
+            "locations": result.locations.slice(2435).map((l,i) => {
+
+               // if(i > 1367) return;
+              //  if(l.speed < 1) console.log(i,l);
+                
                 return {
-                    latitude: l.lat,
-                    longitude: l.lng
+                    latitude: l.latitude,
+                    longitude: l.longitude
                 }
             })
         }
 
+       // console.log(newTrack)
+
+        
         db.collection('track').insertOne(newTrack, function (err, doc) {
             if (err) {
                 res.status(500);
@@ -35,6 +42,7 @@ initDb({}, function (err) {
             }
            console.log('done', err);
         });
+        
 
     });
 });

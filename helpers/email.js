@@ -9,7 +9,7 @@ function TemplateEmail(to, template, locals) {
         secure: true,
         auth: {
             user: 'admin@xrc.co.za',
-            pass: 'behrens!5'
+            pass: '0VR9voYW5B'
         }
     });
 
@@ -38,7 +38,7 @@ function SendEmail(to, subject, html, callback) {
         secure: true,
         auth: {
             user: 'admin@xrc.co.za',
-            pass: 'behrens!5'
+            pass: '0VR9voYW5B'
         }
     });
     let mailOptions = {

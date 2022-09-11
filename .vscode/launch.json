@@ -52,14 +52,26 @@
         {
             "type": "node",
             "request": "launch",
-            "name": "test",
-            "program": "${workspaceFolder}/scheduler.js"
+            "name": "onebase",
+            "program": "${workspaceFolder}/onebase_test.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "onebase1",
+            "program": "${workspaceFolder}/onebase_test_url2.js"
         },
         {
             "type": "node",
             "request": "launch",
             "name": "worker",
             "program": "${workspaceFolder}/worker.js"
+        },
+        {
+            "type": "node",
+            "request": "launch",
+            "name": "GPS",
+            "program": "${workspaceFolder}/gps.js"
         }
     ]
 }

@@ -43,6 +43,8 @@ function Generate(params, data, callback) {
         data.invoiceParams.append('invoiceNumber', params.invoice.preFix + (('00000' + invoiceNumber).slice(-5)));
         data.invoiceParams.append('invoiceDescription', params.invoice.invoiceDescription);
 
+        data.invoiceParams.append('entityId', params.invoice.entityId);
+
         data.invoiceParams.append('clientName', params.invoice.clientName);
         data.invoiceParams.append('personName', params.invoice.personName);
         data.invoiceParams.append('personEmail', params.invoice.personEmail);
@@ -71,6 +73,7 @@ function Generate(params, data, callback) {
         let invoice = {};
         invoice.clientName = params.invoice.clientName;
         invoice.toEmail = params.invoice.personEmail;
+        invoice.entityId = params.invoice.entityId;
         invoice.to = params.invoice.personName;
         invoice.invoiceDate = moment().format('YYYY-MM-DD');
         invoice.invoiceTemplateId = params.invoice.invoiceTemplateId; //

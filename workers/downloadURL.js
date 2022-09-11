@@ -1,14 +1,15 @@
 const fetch = require('node-fetch');
 const mustache = require('mustache');
+const fs = require('fs');
 
 function Download(params, data, callback) {
 
     let options = {};
 
-    if(params.method && params.method.toUpperCase() == 'POST') {
+    if (params.method && params.method.toUpperCase() == 'POST') {
         options.body = JSON.stringify(data);
         options.method = 'POST';
-        options.headers=  { 'Content-Type': 'application/json' }
+        options.headers = { 'Content-Type': 'application/json' }
     }
     else {
         options.method = 'GET';
@@ -16,7 +17,12 @@ function Download(params, data, callback) {
 
     params.url = mustache.render(params.url, data);
     fetch(params.url, options)
-        .then(res => res.json())
+        .then(res => {
+            if (!params.returnRaw) return res.json()
+            else {
+                return res.text();
+            }
+        })
         .then(json => {
             console.log(json);
             data.payload = json;

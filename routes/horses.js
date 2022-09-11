@@ -130,12 +130,22 @@ function AddHorse(req, res) {
         else {
             if (!horse) {
                 db.collection('horse').insertOne(req.body, function (err, horse) {
-                    res.send(horse.ops[0]);
+                    let h = horse.ops[0];
+                    h.own = true;
+                    h.own = h.userId.toString() == req.user._id.toString();
+                    h.edit = h.own && (req.user.valid || h.default);
+
+                    res.send(h);
                 })
             }
             else {
                 db.collection('horse').replaceOne({ _id: req.body._id }, req.body, function (err, horse) {
-                    res.send(horse.ops[0]);
+                    let h = horse.ops[0];
+                    h.own = true;
+                    h.own = h.userId.toString() == req.user._id.toString();
+                    h.edit = h.own && (req.user.valid || h.default);
+
+                    res.send(h);
                 })
             }
         }

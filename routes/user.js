@@ -14,11 +14,60 @@ router.post('/', UpdateUser);
 router.post('/filter', UpdateUserFilter);
 router.post('/linkParkRides', LinkParkRides);
 router.post('/getParkRideHorses', GetParkRideHorses);
+router.post('/deleteAccount', DeleteAccount);
 
 function GetUser(req, res) {
     res.send({
         valid: req.user.valid,
         currentSubscription: req.user.currentSubscription,
+    });
+}
+
+function DeleteAccount(req, res) {
+    console.log('DeleteAccount');
+    var db = getDb();
+
+    db.collection('location').deleteMany({
+        userId: req.user._id,
+        raceId: null
+    }, function (err, doc) {
+        if (err) {
+            console.log(err);
+            return res.error(err);
+        }
+        db.collection('horse').deleteMany({
+            userId: req.user._id
+        }, function (err, doc) {
+            if (err) {
+                console.log(err);
+                return res.error(err);
+            }
+            db.collection('track').deleteMany({
+                userId: req.user._id
+            }, function (err, doc) {
+                if (err) {
+                    console.log(err);
+                    return res.error(err);
+                }
+                db.collection('rider').deleteMany({
+                    userId: req.user._id
+                }, function (err, doc) {
+                    if (err) {
+                        console.log(err);
+                        return res.error(err);
+                    }
+                    db.collection('users').deleteMany({
+                        _id: req.user._id
+                    }, function (err, doc) {
+                        if (err) {
+                            console.log(err);
+                            return res.error(err);
+                        }
+                        res.send({ message: 'done' });
+                    });
+                });
+            });
+        });
     });
 }
 

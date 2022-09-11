@@ -48,7 +48,7 @@ function AddLiveResults(req, res) {
     if (dayNrChanges && dayNrChanges.length > 0) {
         async.eachSeries(dayNrChanges, function (dayNrChange, callback) {
             db.collection('location').updateOne(
-                { type, raceId: req.body.raceid, date, riderNumber: dayNrChange.previous },
+                { type, raceId: req.body.raceid, date, riderNumber: dayNrChange.previous, raceDay: req.body.rideDay },
                 {
                     $set: {
                         riderNumber: dayNrChange.new
@@ -96,13 +96,14 @@ function AddLiveResults(req, res) {
                 newItem[index] = item[i];
             })
             db.collection('location').updateOne(
-                { type, raceId: req.body.raceid, date, riderNumber: newItem.DAYNO },
+                { type, raceId: req.body.raceid, date, riderNumber: newItem.DAYNO,raceDay: req.body.rideDay },
                 {
                     $set: {
                         ...newItem,
                         type,
                         raceid: req.body.raceid,
-                        date
+                        date,
+                        raceDay: req.body.rideDay
                     }
                 },
                 { upsert: true }, function (err, result) {
@@ -237,6 +238,7 @@ function liveLocationsAggregate(raceId, type) {
             locations: { $slice: ["$locations", -3] },
             raceId: 1,
             riderNumber: 1,
+            raceDay:1,
             date: 1,
             type: 1,
             diff: 1,
@@ -334,12 +336,12 @@ function GetLiveResults(req, res) {
         else {
 
 
-            if (req.params.type == 'DRASA') {
-                return res.send(drasaResults(results));
-            }
-            else {
+          //  if (req.params.type == 'DRASA') {
+          //      return res.send(drasaResults(results));
+          //  }
+          //  else {
                 transformResults(results, req.params.id, done);
-            }
+          //  }
             function done(err, trans) {
                 if (err) {
                     res.status(500);
