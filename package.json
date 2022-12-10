@@ -21,7 +21,7 @@
     "endomondo-unofficial-api": "^1.0.68",
     "epson-thermal-printer": "^1.0.0",
     "esm": "^3.2.25",
-    "express": "^4.16.4",
+    "express": "^4.17.3",
     "express-fileupload": "^1.1.4",
     "fetch-base64": "^2.1.2",
     "firebase-admin": "^7.3.0",
